@@ -70,6 +70,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
     *,
     ::after,
     ::before,
@@ -80,6 +81,7 @@
 }
 
 @layer utilities {
+
     body,
     html {
         --font-sans:
@@ -166,7 +168,27 @@
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
         @apply bg-background text-foreground;
     }
+}
+
+.bg-abstract-light-import {
+    background: #a1e276;
+    border: 1px solid black;
+    /* background: linear-gradient(297deg, rgba(0, 25, 33, 1) 0%, rgba(7, 74, 69, 1) 100%); */
+}
+
+.bg-abstract-light-delete {
+    background: #d56666;
+    border: 1px solid black;
+    /* background: linear-gradient(297deg, rgba(34, 0, 0, 0.607) 0%, rgb(223, 12, 12) 100%); */
+}
+
+
+.bg-abstract-light-blast {
+    background: #8fb5c2;
+    border: 1px solid black;
+    /* background: linear-gradient(297deg, rgba(34, 0, 0, 0.607) 0%, rgb(12, 40, 223) 100%); */
 }
