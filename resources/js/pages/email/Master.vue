@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { email } from '@/routes';
 import { Head } from '@inertiajs/vue3';
 import { DeleteIcon, LoaderCircleIcon, PlayIcon, PlaySquareIcon, StarIcon, Trash2Icon, Upload } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps<{
@@ -72,6 +72,20 @@ const daleteDataAll = () => {
     })
 }
 
+const search = ref('');
+
+// hasil filter otomatis berubah ketika search berubah
+// filtering
+const filteredItems = computed(() => {
+    if (!search.value) return dataEmail.value;
+
+    return dataEmail.value.filter(item =>
+        item.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+        item.email?.toLowerCase().includes(search.value.toLowerCase()) ||
+        item.phone?.toLowerCase().includes(search.value.toLowerCase())
+    );
+});
+
 </script>
 
 <template>
@@ -101,7 +115,7 @@ const daleteDataAll = () => {
                 <div class="flex space-x-5">
                     <div>
                         <button type="button" @click="handleImport"
-                            class="inline-flex items-center text-black gap-x-2 px-4 py-2 rounded-lg bg-abstract-light-import cursor-pointer">
+                            class="inline-flex items-center text-black gap-x-2 px-4 py-2 rounded-lg bg-primary cursor-pointer">
                             <Upload class="w-4 h-4" />
                             <span>Import Excel</span>
                         </button>
@@ -113,7 +127,7 @@ const daleteDataAll = () => {
 
                     <div>
                         <button type="button" @click="handleImport"
-                            class="inline-flex items-center gap-x-2 text-black px-4 py-2 rounded-lg bg-abstract-light-blast cursor-pointer">
+                            class="inline-flex items-center gap-x-2 text-black px-4 py-2 rounded-lg bg-seccondary cursor-pointer">
                             <PlayIcon class="w-4 h-4" />
                             <span>Start Blast</span>
                         </button>
@@ -125,7 +139,7 @@ const daleteDataAll = () => {
 
                     <div>
                         <button type="button" @click="daleteDataAll"
-                            class="inline-flex items-center text-black gap-x-2 px-4 py-2 rounded-lg bg-abstract-light-delete cursor-pointer">
+                            class="inline-flex items-center text-black gap-x-2 px-4 py-2 rounded-lg bg-danger cursor-pointer">
                             <Trash2Icon class="w-4 h-4" />
                             <span>Delete All</span>
                         </button>
@@ -137,7 +151,26 @@ const daleteDataAll = () => {
                 </div>
             </div>
 
-            <p>Total : <span class="font-bold">{{ total }}</span> User</p>
+            <div class="flex justify-between w-full">
+                <p>Total : <span class="font-bold">{{ total }}</span> User</p>
+
+                <div class="">
+                    <label for="search" class="block mb-2.5 text-sm font-medium text-heading sr-only ">Search</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                    d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input type="search" id="search" v-model="search"
+                            class="block w-full p-3 ps-9 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                            placeholder="Search..." />
+                    </div>
+                </div>
+
+            </div>
 
             <!-- Tabel -->
             <div class="-m-1.5 overflow-x-auto">
@@ -164,7 +197,7 @@ const daleteDataAll = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                                <tr v-for="(value, key) in dataEmail" :key="key">
+                                <tr v-for="(value, key) in filteredItems" :key="key">
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
                                         {{ key + 1 }}</td>
@@ -193,7 +226,7 @@ const daleteDataAll = () => {
                         <a :href="value.url ?? '#'" :class="[
                             'flex items-center justify-center text-sm h-9 px-3 border box-border font-medium focus:outline-none',
                             value.active
-                                ? 'bg-abstract-light-import text-black border-blue-600'
+                                ? 'bg-primary text-black border-blue-600'
                                 : 'bg-neutral-secondary-medium text-body border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading',
                             key === 0 ? 'rounded-s-base' : '',
                             key === pagination.length - 1 ? 'rounded-e-base' : '',

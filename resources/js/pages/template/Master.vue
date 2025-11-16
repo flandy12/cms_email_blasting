@@ -59,14 +59,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
                                         john@site.com</td>
 
-                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium space-x-5">
+                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium space-x-3">
                                         <Link :href="`/template/1/show`">
                                         <button type="button"
-                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white-600 hover:text-white-800 focus:outline-hidden focus:text-white-800 disabled:opacity-50 disabled:pointer-events-none dark:tex
-                                            t-white-500 dark:hover:text-white-400 dark:focus:text-white-400 cursor-pointer">Edit</button>
+                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white-600 hover:text-white-800 focus:outline-hidden focus:text-white-800 disabled:opacity-50 disabled:pointer-events-none px-5 py-2 text-black bg-primary cursor-pointer">Edit</button>
                                         </Link>
                                         <button type="button"
-                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-red-600 hover:text-red-800 focus:outline-hidden focus:text-red-800 disabled:opacity-50 disabled:pointer-events-none dark:text-red-500 dark:hover:text-red-400 dark:focus:text-red-400 cursor-pointer">Delete</button>
+                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-danger px-5 py-2 text-black disabled:pointer-events-none cursor-pointer">Delete</button>
                                     </td>
                                 </tr>
                             </tbody>

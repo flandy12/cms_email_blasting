@@ -174,21 +174,32 @@
     }
 }
 
-.bg-abstract-light-import {
+.bg-primary {
     background: #a1e276;
     border: 1px solid black;
-    /* background: linear-gradient(297deg, rgba(0, 25, 33, 1) 0%, rgba(7, 74, 69, 1) 100%); */
 }
 
-.bg-abstract-light-delete {
+.bg-seccondary {
+    background: #8fb5c2;
+    border: 1px solid black;
+}
+.bg-thridary {
+    background: #f2e394;
+    border: 1px solid black;
+}
+
+.bg-danger {
+    background: #f25c54;
+    border: 1px solid black;
+}
+/* .bg-abstract-light-delete {
     background: #d56666;
     border: 1px solid black;
-    /* background: linear-gradient(297deg, rgba(34, 0, 0, 0.607) 0%, rgb(223, 12, 12) 100%); */
-}
-
+    background: linear-gradient(297deg, rgba(34, 0, 0, 0.607) 0%, rgb(223, 12, 12) 100%); 
+} */
 
 .bg-abstract-light-blast {
     background: #8fb5c2;
     border: 1px solid black;
     /* background: linear-gradient(297deg, rgba(34, 0, 0, 0.607) 0%, rgb(12, 40, 223) 100%); */
-}
+} 

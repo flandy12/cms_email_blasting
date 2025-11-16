@@ -115,13 +115,6 @@ const submitForm = () => {
                                 required />
                         </div>
 
-                        <div>
-                            <label for="subject" class="block text-sm font-medium mb-1">Subject</label>
-                            <input v-model="form.subject" id="subject" type="text" placeholder="Title"
-                                class="w-full rounded-lg border border-gray-300 focus:ring-2 mt-3 focus:ring-blue-500 px-4 py-2"
-                                required />
-                        </div>
-
                         <!-- Wording -->
                         <div>
                             <label class="block text-sm font-medium mb-1">Wording</label>
@@ -134,25 +127,19 @@ const submitForm = () => {
 
                             <div class="grid grid-cols-3 gap-2 mt-3">
                                 <button :class="form.buttonType === 'none'
-                                    ? 'bg-[#7bb952] text-white'
+                                    ? 'bg-primary text-black'
                                     : 'bg-gray-800 border border-gray-700 text-gray-300'"
                                     class="py-2 rounded-xl transition" @click="form.buttonType = 'none'">
                                     None
                                 </button>
 
                                 <button :class="form.buttonType === 'button'
-                                    ? 'bg-[#7bb952] text-white'
+                                    ? 'bg-primary text-black'
                                     : 'bg-gray-800 border border-gray-700 text-gray-300'"
                                     class="py-2 rounded-xl transition" @click="form.buttonType = 'button'">
                                     URL
                                 </button>
 
-                                <!-- <button :class="form.buttonType === 'wa'
-                                    ? 'bg-[#7bb952] text-white'
-                                    : 'bg-gray-800 border border-gray-700 text-gray-300'"
-                                    class="py-2 rounded-xl transition" @click="form.buttonType = 'wa'">
-                                    WhatsApp
-                                </button> -->
                             </div>
                         </div>
 
@@ -225,7 +212,7 @@ const submitForm = () => {
                         <!-- Action Buttons -->
                         <div class="flex justify-end space-x-3 pt-4">
                             <button type="submit"
-                                class="px-4 py-2 rounded-lg bg-[#a1e276] text-black hover:text-white hover:bg-[#66a43c]">
+                                class="px-4 py-2 rounded-lg bg-primary text-black hover:text-white hover:bg-[#66a43c]">
                                 Save Template
                             </button>
                         </div>

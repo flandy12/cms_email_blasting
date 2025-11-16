@@ -52,19 +52,19 @@ const handleFileChange = (event: Event) => {
                             <thead class="bg-gray-50 dark:bg-neutral-800">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
                                         No</th>
                                     <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
                                         Name</th>
                                     <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
                                         Email</th>
                                     <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
                                         Phone</th>
                                     <th
-                                        class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                                        class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase ">
                                         Status Pengiriman</th>
                                 </tr>
                             </thead>
@@ -80,15 +80,9 @@ const handleFileChange = (event: Event) => {
                                         john@site.com</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
                                         088921113833</td>
-                                    <td class="px-6 py-4 space-x-5 whitespace-nowrap text-end text-sm font-medium">
+                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium space-x-3">
                                         <button type="button"
-                                            class="inline-flex cursor-pointer items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 bg-blue-100 px-5 hover:text-blue-800 focus:outline-hidden dark:text-blue-500 dark:hover:text-blue-400">
-                                            Done
-                                        </button>
-                                        <button type="button"
-                                            class="inline-flex cursor-pointer items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-red-600 hover:text-red-800 focus:outline-hidden dark:text-red-500 dark:hover:text-red-400">
-                                            Delete
-                                        </button>
+                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-danger px-5 py-2 text-black disabled:pointer-events-none cursor-pointer">Retry</button>
                                     </td>
                                 </tr>
                             </tbody>
