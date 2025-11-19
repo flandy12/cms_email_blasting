@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { email } from '@/routes'
-import { Head } from '@inertiajs/vue3'
+import { email, templateStorePost, templateCreate } from '@/routes'
+import { Head, router } from '@inertiajs/vue3'
 import { ref, computed, defineEmits } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Message from '@/components/Message.vue'
+import { error } from 'console'
+import Loading from '@/components/Loading.vue'
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
@@ -22,11 +24,13 @@ const form = ref({
     urlType: 'static',
     buttonType: 'none', // button | wa
     url: '',
-    subject: '',
     baseUrl: '',
     buttonText: '',
     params: [] as { key: string; value: string }[],
-})
+});
+
+const errors = ref([]);
+const isLoading = ref(false)
 
 // Tambah & hapus parameter
 const addParam = () => form.value.params.push({ key: '', value: '' })
@@ -83,14 +87,43 @@ const finalButtonUrl = computed(() => {
 
 // Submit
 const submitForm = () => {
+    isLoading.value = true;
     const payload = {
         ...form.value,
-        finalUrl: finalButtonUrl.value,
     }
 
-    console.log('Form Submitted:', payload)
-    // TODO: Inertia.post('/templates', payload)
+    console.log("Submitting form with payload:", payload);
+    fetch(templateStorePost.url(), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(async (response) => {
+            const text = await response.json()
+
+            if (!response.ok) {
+                console.error("Validation failed:", text)
+                errors.value = text.errors || [];
+                isLoading.value = false;
+                console.log(text);
+                return;
+            }
+            isLoading.value = false;
+            alert("Success:");
+            templateCreate.url();
+
+        })
+        .catch(err => {
+            console.error("Fetch error:", err)
+            isLoading.value = false;
+        })
 }
+
 </script>
 
 <template>
@@ -98,6 +131,10 @@ const submitForm = () => {
     <Head title="Create Template" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
+        <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <Loading />
+        </div>
+
         <div class="w-full mx-auto rounded-2xl shadow p-8 space-y-6">
             <div class="flex w-full flex-col lg:flex-row space-x-0 lg:space-x-6 space-y-6 lg:space-y-0">
 
@@ -111,14 +148,22 @@ const submitForm = () => {
                         <div>
                             <label for="name" class="block text-sm font-medium mb-1">Template Name</label>
                             <input v-model="form.name" id="name" type="text" placeholder="e.g. Promo Akhir Tahun"
-                                class="w-full rounded-lg border border-gray-300 focus:ring-2 mt-3 focus:ring-blue-500 px-4 py-2"
-                                required />
+                                class="w-full rounded-lg border border-gray-300 focus:ring-2 mt-3 focus:ring-blue-500 px-4 py-2" />
+
+                            <div v-if="errors.name" class="text-red-500 text-sm mt-1" v-for="value in errors.name">
+                                {{ value }}
+                            </div>
                         </div>
 
                         <!-- Wording -->
                         <div>
                             <label class="block text-sm font-medium mb-1">Wording</label>
-                            <Message :content="form.wording" :button="form.buttonType" :url="finalButtonUrl" :button-text="form.buttonText" />
+                            <Message v-model="form.wording" :content="form.wording" :button="form.buttonType" :url="finalButtonUrl"
+                                :button-text="form.buttonText" />
+                            <div v-if="errors.wording" class="text-red-500 text-sm mt-1"
+                                v-for="value in errors.wording">
+                                {{ value }}
+                            </div>
                         </div>
 
                         <!-- Button Type -->
@@ -145,12 +190,10 @@ const submitForm = () => {
 
                         <!-- URL Type -->
                         <div v-if="form.buttonType !== 'none'">
-                            <div class="mb-5"> 
+                            <div class="mb-5">
                                 <label class="block text-sm font-medium mb-2">Button Text</label>
                                 <div class="flex items-center space-x-6">
-                                    
-                                    <input v-model="form.buttonText" id="url" type="text"
-                                        placeholder="Kunjungi Kami"
+                                    <input v-model="form.buttonText" id="url" type="text" placeholder="Kunjungi Kami"
                                         class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4 py-2" />
                                 </div>
                             </div>

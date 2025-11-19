@@ -5,6 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import { DeleteIcon, LoaderCircleIcon, PlayIcon, PlaySquareIcon, StarIcon, Trash2Icon, Upload } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import Loading from '@/components/Loading.vue';
 
 const props = defineProps<{
     jobs: {
@@ -60,9 +61,10 @@ const total = ref(props.jobs.total);
 const isLoading = ref(false)
 
 const daleteDataAll = () => {
+    isLoading.value = true;
+
     if (!confirm("Yakin hapus semua data?")) return
 
-    isLoading.value = true
 
     router.delete('/email/delete', {
         onFinish: () => {
@@ -95,14 +97,7 @@ const filteredItems = computed(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
 
         <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div class="flex flex-col items-center space-y-3 ">
-
-                <svg aria-hidden="true" class="w-10 h-10 text-white animate-spin fill-blue-500" viewBox="0 0 100 101">
-                    <path d="M100 50.5908C100 78.2051..." />
-                    <path d="M93.9676 39.0409C96.393..." />
-                </svg>
-                <p class="text-white text-sm font-medium">Processing...</p>
-            </div>
+            <Loading />
         </div>
 
         <div class="w-full mx-auto rounded-2xl shadow p-8 space-y-6">

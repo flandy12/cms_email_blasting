@@ -11,6 +11,12 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('/token', function () {
+    return response()->json([
+        'token' => encrypt(env('TOKEN_API')),
+    ]);
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', function () {
@@ -23,7 +29,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::get('/template', [UserController::class, 'messageTemplate'])->name('template');
-Route::get('/template/create', [UserController::class, 'messageTemplateStore'])->name('templateCreate');
+    Route::get('/template/create', [UserController::class, 'messageTemplateStore'])->name('templateCreate');
+    Route::post('/template/create', [UserController::class, 'messageTemplateStorePost'])->name('templateStorePost');
+
     Route::get('/template/{id}/show', [UserController::class, 'messageTemplateView'])->name('templateView');
 
     Route::get('/log', function () {

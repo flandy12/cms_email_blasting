@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name',255)->unique();
-            $table->string('subject',255);
-            $table->text('wording');
+            $table->longText('wording');
             $table->timestamps();
         });
     }

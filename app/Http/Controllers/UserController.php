@@ -42,7 +42,8 @@ class UserController extends Controller
 
     public function messageTemplate()
     {
-        return Inertia::render('template/Master');
+        $templates = $this->masterService->getTemplates();
+        return Inertia::render('template/Master', compact('templates'));
     }
 
     public function messageTemplateStore()
@@ -53,5 +54,10 @@ class UserController extends Controller
     public function messageTemplateView()
     {
         return Inertia::render('template/partials/Edit');
+    }
+
+    public function messageTemplateStorePost(Request $request)
+    {
+        return $this->masterService->storeTemplate($request->all());
     }
 }
