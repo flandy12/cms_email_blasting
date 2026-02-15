@@ -11,10 +11,19 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, email, template, templateCreate, log } from '@/routes';
+import { blastingCampaigns, blastingCampaignsCreate, dashboard, email, template, templateCreate, log, recipientsCreate, recipients } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, } from 'lucide-vue-next';
+import {
+    LayoutGrid,
+    Users,
+    Send,
+    FileText,
+    Mail,
+    ClipboardList,
+    Folder,
+    BookOpen,
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -23,23 +32,48 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+
+    // 🔹 BLASTING CAMPAIGN (CORE FEATURE)
     {
-        title: 'Master Email',
-        href: email(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Template',
-        icon: LayoutGrid,
+        title: 'Blasting Campaign',
+        icon: Send,
         children: [
-            { title: 'Create Tamplate', href: templateCreate() },
-            { title: 'Master Tamplate', href: template() },
+            {
+                title: 'Campaign List',
+                href: blastingCampaigns(),
+            },
+            {
+                title: 'Templates',
+                href: template(),
+            },
+            {
+                title: 'Logs',
+                href: log(),
+            },
         ],
     },
+
+    // 🔹 MASTER RECIPIENT
     {
-        title: 'Log',
-        href: log(),
-        icon: LayoutGrid,
+        title: 'Recipients',
+        icon: Users,
+        children: [
+            {
+                title: 'Master Recipients',
+                href: recipients().url,
+            },
+            {
+                title: 'Create Recipient',
+                href: recipientsCreate().url,
+            },
+        ],
+    },
+
+    // 🔹 MASTER EMAIL
+    {
+        title: 'Email',
+        href: email(),
+        icon: Mail,
     },
 ];
 
@@ -64,7 +98,7 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="dashboard()">
-                        <AppLogo />
+                            <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

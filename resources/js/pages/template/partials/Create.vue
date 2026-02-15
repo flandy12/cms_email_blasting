@@ -1,269 +1,303 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { email, templateStorePost, templateCreate } from '@/routes'
-import { Head, router } from '@inertiajs/vue3'
-import { ref, computed, defineEmits } from 'vue'
+import { email, templateStorePost, templateCreate, template } from '@/routes'
+import { Head, Link, router } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Message from '@/components/Message.vue'
-import { error } from 'console'
 import Loading from '@/components/Loading.vue'
+import { usePage } from '@inertiajs/vue3'
 
-// Breadcrumbs
+
+/* =========================
+   Breadcrumb
+========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Template', href: email().url },
+  { title: 'Template', href: email().url },
 ]
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
-const onChange = (content: string) => emit('update:modelValue', content)
-
-// Form
-const form = ref({
-    name: '',
-    wording: '',
-    to: '',
-    urlType: 'static',
-    buttonType: 'none', // button | wa
-    url: '',
-    baseUrl: '',
-    buttonText: '',
-    params: [] as { key: string; value: string }[],
-});
-
-const errors = ref([]);
+/* =========================
+   State
+========================= */
 const isLoading = ref(false)
+const errors = ref<Record<string, string[]>>({})
+const page = usePage()
 
-// Tambah & hapus parameter
-const addParam = () => form.value.params.push({ key: '', value: '' })
-const removeParam = (index: number) => form.value.params.splice(index, 1)
+const successModal = ref({
+  show: false,
+  message: '',
+})
 
-// Dynamic URL Preview
+// Listen flash success
+watch(
+  () => page.props.flash,
+  (flash: any) => {
+    if (flash?.success) {
+      successModal.value = {
+        show: true,
+        message: flash.success,
+      }
+    }
+  },
+  { immediate: true }
+)
+
+// Close modal
+const closeSuccessModal = () => {
+  successModal.value.show = false
+}
+
+const form = ref({
+  name: '',
+  subject: '',
+  wording: '',
+  buttonType: 'none', // none | button | wa
+  buttonText: '',
+  urlType: 'static', // static | dynamic
+  url: '',
+  baseUrl: '',
+  params: [] as { key: string; value: string }[],
+})
+
+/* =========================
+   Params Handler
+========================= */
+const addParam = () => {
+  form.value.params.push({ key: '', value: '' })
+}
+
+const removeParam = (index: number) => {
+  form.value.params.splice(index, 1)
+}
+
+/* =========================
+   Dynamic URL Preview
+========================= */
 const dynamicUrlPreview = computed(() => {
-    let url = form.value.baseUrl?.trim()
-    if (!url) return ''
+  let url = form.value.baseUrl.trim()
+  if (!url) return ''
 
-    const queryParams: Record<string, string> = {}
+  const query: Record<string, string> = {}
 
-    form.value.params.forEach(({ key, value }) => {
-        if (!key || !value) return
+  form.value.params.forEach(({ key, value }) => {
+    if (!key || !value) return
 
-        const pattern = new RegExp(`{${key}}`, 'g')
+    const pattern = new RegExp(`{${key}}`, 'g')
 
-        if (pattern.test(url)) {
-            url = url.replace(pattern, encodeURIComponent(value))
-        } else {
-            queryParams[key] = value
-        }
-    })
-
-    const queryString = Object.entries(queryParams)
-        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-        .join('&')
-
-    if (queryString) {
-        url += (url.includes('?') ? '&' : '?') + queryString
+    if (pattern.test(url)) {
+      url = url.replace(pattern, encodeURIComponent(value))
+    } else {
+      query[key] = value
     }
+  })
 
-    return url
+  const qs = Object.entries(query)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&')
+
+  return qs ? `${url}${url.includes('?') ? '&' : '?'}${qs}` : url
 })
 
-// Final URL (Button Click / WA Click)
+/* =========================
+   Final Button URL
+========================= */
 const finalButtonUrl = computed(() => {
-    const baseUrl =
-        form.value.urlType === 'static'
-            ? form.value.url
-            : dynamicUrlPreview.value
+  if (form.value.buttonType === 'none') return ''
 
-    if (form.value.buttonType !== 'wa') {
-        return baseUrl
-    }
+  const url =
+    form.value.urlType === 'static'
+      ? form.value.url
+      : dynamicUrlPreview.value
 
-    // WA URL Builder
-    const baseWa = "https://wa.me/?text="
-    const message = `*${form.value.subject}*\n\n${form.value.wording || ""}`
-    const text = `${message}\n\n${baseUrl}`
+  if (form.value.buttonType === 'button') return url
 
-    return baseWa + encodeURIComponent(text)
+  // WA
+  const waText = `*${form.value.subject}*\n\n${form.value.wording}\n\n${url}`
+  return `https://wa.me/?text=${encodeURIComponent(waText)}`
 })
 
-// Submit
+/* =========================
+   Submit
+========================= */
 const submitForm = () => {
-    isLoading.value = true;
-    const payload = {
-        ...form.value,
-    }
+  isLoading.value = true
+  errors.value = {}
 
-    console.log("Submitting form with payload:", payload);
-    fetch(templateStorePost.url(), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-        },
-        body: JSON.stringify(payload),
-    })
-        .then(async (response) => {
-            const text = await response.json()
-
-            if (!response.ok) {
-                console.error("Validation failed:", text)
-                errors.value = text.errors || [];
-                isLoading.value = false;
-                console.log(text);
-                return;
-            }
-            isLoading.value = false;
-            alert("Success:");
-            templateCreate.url();
-
-        })
-        .catch(err => {
-            console.error("Fetch error:", err)
-            isLoading.value = false;
-        })
+  router.post(templateStorePost.url(), {
+    name: form.value.name,
+    subject: form.value.subject,
+    wording: form.value.wording,
+    button_type: form.value.buttonType,
+    button_text: form.value.buttonType === 'none' ? null : form.value.buttonText,
+    url_type: form.value.buttonType === 'none' ? null : form.value.urlType,
+    url:
+      form.value.buttonType === 'none'
+        ? null
+        : form.value.urlType === 'static'
+          ? form.value.url
+          : dynamicUrlPreview.value,
+    params: form.value.params,
+  }, {
+    preserveScroll: true,
+    onFinish: () => {
+      isLoading.value = false;
+    },
+    onError: (err) => {
+      errors.value = err
+    },
+  })
 }
 
 </script>
 
 <template>
 
-    <Head title="Create Template" />
+  <Head title="Create Template" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <Loading />
+  <AppLayout :breadcrumbs="breadcrumbs">
+    <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <Loading />
+    </div>
+
+    <!-- Success Modal -->
+    <div v-if="successModal.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center">
+
+        <!-- Icon -->
+        <div class="flex justify-center mb-4">
+          <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+            <span class="text-green-600 text-2xl">✓</span>
+          </div>
         </div>
 
-        <div class="w-full mx-auto rounded-2xl shadow p-8 space-y-6">
-            <div class="flex w-full flex-col lg:flex-row space-x-0 lg:space-x-6 space-y-6 lg:space-y-0">
+        <!-- Title -->
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+          Berhasil
+        </h3>
 
-                <div class="flex-9">
-                    <h2 class="text-xl font-semibold">Create New Template</h2>
-                    <p class="text-sm text-gray-600 mb-4 ">Fill in the details below to create a new email template.</p>
+        <!-- Message -->
+        <p class="text-sm text-gray-600 mb-6">
+          {{ successModal.message }}
+        </p>
 
-                    <form @submit.prevent="submitForm" class="space-y-6">
+        <!-- Actions -->
+        <div class="flex justify-center gap-3">
+          <button @click="closeSuccessModal" class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
+            OK
+          </button>
+        </div>
 
-                        <!-- Template Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium mb-1">Template Name</label>
-                            <input v-model="form.name" id="name" type="text" placeholder="e.g. Promo Akhir Tahun"
-                                class="w-full rounded-lg border border-gray-300 focus:ring-2 mt-3 focus:ring-blue-500 px-4 py-2" />
+      </div>
+    </div>
 
-                            <div v-if="errors.name" class="text-red-500 text-sm mt-1" v-for="value in errors.name">
-                                {{ value }}
-                            </div>
-                        </div>
+    <div class="w-full mx-auto  rounded-2xl shadow p-8 space-y-6">
+      <h2 class="text-xl font-semibold">Create New Template</h2>
+      <p class="text-sm text-gray-500">
+        Buat template untuk email / WhatsApp blasting
+      </p>
 
-                        <!-- Wording -->
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Wording</label>
-                            <Message v-model="form.wording" :content="form.wording" :button="form.buttonType" :url="finalButtonUrl"
-                                :button-text="form.buttonText" />
-                            <div v-if="errors.wording" class="text-red-500 text-sm mt-1"
-                                v-for="value in errors.wording">
-                                {{ value }}
-                            </div>
-                        </div>
+      <form @submit.prevent="submitForm" class="space-y-6">
+        <!-- Name -->
+        <div>
+          <label class="block text-sm font-medium">Template Name</label>
+          <input v-model="form.name" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
+          <div v-if="errors.name" class="text-red-500 text-sm mt-1">
+            {{ errors.name }}
+          </div>
+        </div>
 
-                        <!-- Button Type -->
-                        <div class="space-y-6">
-                            <label class="text-sm font-semibold text-gray-200">Jenis Tombol</label>
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium">Subject</label>
+          <input v-model="form.subject" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
+          <p v-if="errors.subject" class="text-red-500 text-sm">{{ errors.subject }}</p>
+        </div>
 
-                            <div class="grid grid-cols-3 gap-2 mt-3">
-                                <button :class="form.buttonType === 'none'
-                                    ? 'bg-primary text-black'
-                                    : 'bg-gray-800 border border-gray-700 text-gray-300'"
-                                    class="py-2 rounded-xl transition" @click="form.buttonType = 'none'">
-                                    None
-                                </button>
+        <!-- Wording -->
+        <div>
+          <label class="block text-sm font-medium">Wording</label>
+          <Message v-model="form.wording" :button="form.buttonType" :url="finalButtonUrl"
+            :button-text="form.buttonText" />
+          <p v-if="errors.wording" class="text-red-500 text-sm">{{ errors.wording }}</p>
+        </div>
 
-                                <button :class="form.buttonType === 'button'
-                                    ? 'bg-primary text-black'
-                                    : 'bg-gray-800 border border-gray-700 text-gray-300'"
-                                    class="py-2 rounded-xl transition" @click="form.buttonType = 'button'">
-                                    URL
-                                </button>
+        <!-- Button Type -->
+        <div>
+          <label class="block text-sm font-medium">Button Type</label>
+          <div class="flex space-x-2 mt-2">
+            <button type="button" @click="form.buttonType = 'none'" class="btn">None</button>
+            <button type="button" @click="form.buttonType = 'button'" class="btn">URL</button>
+            <button type="button" @click="form.buttonType = 'wa'" class="btn">WhatsApp</button>
+          </div>
+        </div>
 
-                            </div>
-                        </div>
+        <!-- Button Config -->
+        <div v-if="form.buttonType !== 'none'" class="space-y-4">
+          <input v-model="form.buttonText" placeholder="Button Text" class="w-full border rounded-lg px-4 py-2" />
 
-                        <!-- URL Type -->
-                        <div v-if="form.buttonType !== 'none'">
-                            <div class="mb-5">
-                                <label class="block text-sm font-medium mb-2">Button Text</label>
-                                <div class="flex items-center space-x-6">
-                                    <input v-model="form.buttonText" id="url" type="text" placeholder="Kunjungi Kami"
-                                        class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4 py-2" />
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">URL Type</label>
-                                <div class="flex items-center space-x-6">
-                                    <label class="inline-flex items-center space-x-2">
-                                        <input type="radio" value="static" v-model="form.urlType" />
-                                        <span class="text-sm">Static</span>
-                                    </label>
-                                    <label class="inline-flex items-center space-x-2">
-                                        <input type="radio" value="dynamic" v-model="form.urlType" />
-                                        <span class="text-sm">Dynamic</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+          <!-- URL Type -->
+          <div class="flex space-x-4">
+            <label>
+              <input type="radio" value="static" v-model="form.urlType" />
+              Static
+            </label>
+            <label>
+              <input type="radio" value="dynamic" v-model="form.urlType" />
+              Dynamic
+            </label>
+          </div>
 
-                        <!-- Static URL -->
-                        <div v-if="form.buttonType !== 'none'">
-                            <div v-if="form.urlType === 'static'">
-                                <label for="url" class="block text-sm font-medium mb-1">URL</label>
-                                <input v-model="form.url" id="url" type="text" placeholder="https://example.com/promo"
-                                    class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4 py-2" />
-                            </div>
+          <!-- Static -->
+          <input v-if="form.urlType === 'static'" v-model="form.url" placeholder="https://example.com"
+            class="w-full border rounded-lg px-4 py-2" />
 
-                            <!-- Dynamic URL -->
-                            <div v-else class="space-y-3">
-                                <label class="block text-sm font-medium">Dynamic URL</label>
-                                <input v-model="form.baseUrl" type="text" placeholder="https://example.com/promo"
-                                    class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4 py-2" />
+          <!-- Dynamic -->
+          <div v-else class="space-y-3">
+            <input v-model="form.baseUrl" placeholder="https://example.com/{id}"
+              class="w-full border rounded-lg px-4 py-2" />
 
-                                <div class="space-y-2">
-                                    <div v-for="(param, index) in form.params" :key="index"
-                                        class="flex items-center space-x-2">
-                                        <input v-model="param.key" type="text" placeholder="param name"
-                                            class="flex-1 rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500" />
-                                        <input v-model="param.value" type="text" placeholder="value"
-                                            class="flex-1 rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500" />
-
-                                        <button type="button" @click="removeParam(index)"
-                                            class="text-red-500 hover:text-red-700 text-sm font-medium">✕</button>
-                                    </div>
-                                </div>
-
-                                <button type="button" @click="addParam"
-                                    class="text-sm text-blue-600 hover:underline font-medium">
-                                    + Add Parameter
-                                </button>
-
-                                <!-- Dynamic URL Preview -->
-                                <div class="bg-gray-50 border rounded-lg px-4 py-2 mt-3">
-                                    <p class="text-xs text-gray-600">Preview:</p>
-                                    <code class="text-sm text-black break-words">{{ dynamicUrlPreview }}</code>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex justify-end space-x-3 pt-4">
-                            <button type="submit"
-                                class="px-4 py-2 rounded-lg bg-primary text-black hover:text-white hover:bg-[#66a43c]">
-                                Save Template
-                            </button>
-                        </div>
-
-                    </form>
-                </div>
-
+            <div v-for="(p, i) in form.params" :key="i" class="flex gap-2">
+              <input v-model="p.key" placeholder="key" class="flex-1 border px-2 py-1" />
+              <input v-model="p.value" placeholder="value" class="flex-1 border px-2 py-1" />
+              <button type="button" @click="removeParam(i)">✕</button>
             </div>
+
+            <button type="button" @click="addParam" class="text-blue-600 text-sm">
+              + Add Param
+            </button>
+
+            <code class="block bg-gray-100 p-2 rounded text-sm">
+              {{ dynamicUrlPreview }}
+            </code>
+          </div>
         </div>
-    </AppLayout>
+
+        <div class="flex justify-end gap-5">
+          <div class="text-right">
+           <Link :href="template()">
+             <button
+              class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
+              Cancel
+            </button>
+          </Link>
+          </div>
+
+          <div class="text-right">
+            <button type="submit"
+              class="px-4 py-2 bg-primary text-black font-semibold rounded-lg cursor-pointer hover:bg-green-700">
+              Save Template
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </AppLayout>
 </template>
+
+<style scoped>
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+</style>

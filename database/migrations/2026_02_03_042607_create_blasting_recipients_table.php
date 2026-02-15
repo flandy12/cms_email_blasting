@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blast_jobs', function (Blueprint $table) {
+        Schema::create('blasting_recipients', function (Blueprint $table) {
             $table->id();
+            $table->string('email')->unique();
             $table->string('name')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->enum('status', ['sent', 'failed','pending'])->default('pending');
+            $table->json('metadata')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blast_jobs');
+        Schema::dropIfExists('blasting_recipients');
     }
 };

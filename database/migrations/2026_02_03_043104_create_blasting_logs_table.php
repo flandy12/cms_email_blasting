@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_templates', function (Blueprint $table) {
+        Schema::create('blasting_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('name',255)->unique();
-            $table->longText('wording');
-            $table->timestamps();
+            $table->foreignId('campaign_id');
+            $table->string('email');
+            $table->enum('status', ['sent', 'failed']);
+            $table->text('response')->nullable();
+            $table->timestamp('created_at');
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('email_templates');
+        Schema::dropIfExists('blasting_logs');
     }
 };
