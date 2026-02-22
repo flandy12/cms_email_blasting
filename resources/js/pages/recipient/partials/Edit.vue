@@ -169,17 +169,24 @@ const submit = () => {
                 <div class="text-right flex justify-end gap-5">
                     <div class="text-right">
                         <Link :href="blasting.recipients.index().url">
-                        <button
-                            class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
-                            Cancel
-                        </button>
+                            <button
+                                class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
+                                Cancel
+                            </button>
                         </Link>
                     </div>
 
-                    <button type="submit" :disabled="isLoading"
-                        class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
-                        Update Recipient
-                    </button>
+                    <div class="text-right space-x-3">
+                        <button type="button" @click="router.visit(blasting.recipients.index().url)"
+                            class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
+                            Batal
+                        </button>
+                        <button type="submit" :disabled="isLoading"
+                            class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
+                            Update Recipient
+                        </button>
+                    </div>
+
                 </div>
             </form>
         </div>

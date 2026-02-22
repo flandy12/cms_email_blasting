@@ -101,7 +101,7 @@ const submit = () => {
                 <div class="space-y-4">
                     <label class="block text-sm font-medium">Name (optional)</label>
                     <input v-model="form.name
-                    " type="text" class="input" placeholder="John Doe" />
+                        " type="text" class="input" placeholder="John Doe" />
                     <p v-if="errors.name" class="error">
                         {{ errors.name }}
                     </p>
@@ -150,7 +150,11 @@ const submit = () => {
                 </div>
 
                 <!-- ACTION -->
-                <div class="text-right">
+                <div class="text-right gap-5 flex justify-end">
+                    <button type="button" @click="router.visit(blasting.recipients.index().url)"
+                        class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
+                        Batal
+                    </button>
                     <button type="submit" :disabled="isLoading"
                         class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
                         Save Recipient

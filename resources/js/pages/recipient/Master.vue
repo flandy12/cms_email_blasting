@@ -78,15 +78,22 @@ const recipientDelete = (id: number) => {
         <Loading />
       </div>
       <!--import Dialog -->
-      <div class="text-end me-5 mb-5">
-        <div class="flex gap-5 justify-end">
-          <button command="show-modal" commandfor="dialog-import"
-            class="rounded-md bg-primary px-2.5 py-1.5 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Import
-            Data</button>
+      <div class="text-end mx-5 mb-5">
+        <div class="flex gap-5 justify-between w-full mt-4">
+          <div class="gap-5 flex items-center">
+            <button command="show-modal" commandfor="dialog-import"
+              class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Import
+              Data</button>
 
-          <button command="show-modal" commandfor="dialog-import"
-            class="rounded-md bg-gray-400 px-2.5 py-1.5 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Add
-            Recipient</button>
+            <Link :href="blasting.recipients.create()"
+              class="rounded-md bg-gray-400 px-4 py-2 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">
+              Add
+              Recipient</Link>
+          </div>
+
+          <button class="px-4 py-2 rounded-lg bg-danger cursor-pointer">
+            Delete Recipient All
+          </button>
         </div>
         <el-dialog>
           <dialog id="dialog-import" aria-labelledby="dialog-title"
