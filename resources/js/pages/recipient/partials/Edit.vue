@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { recipients, recipientsStore, recipientsUpdate } from '@/routes'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
+import blasting from '@/routes/blasting'
 
 /* =========================
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Recipients', href: recipients().url },
+    { title: 'Recipients', href: blasting.recipients.index().url },
     { title: 'Edit Recipient', href: '#' },
 ]
 
 const props = defineProps<{
-  recipients: {
-    id: number,
-    name: string
-    email: string,
-    is_active: boolean,
-    metadata: Record<string, string>,
-  }
+    recipients: {
+        id: number,
+        name: string
+        email: string,
+        is_active: boolean,
+        metadata: Record<string, string>,
+    }
 }>()
 
 const recipientsData = ref(props.recipients);
@@ -29,11 +29,11 @@ const recipientsData = ref(props.recipients);
    FORM STATE
 ========================= */
 const form = ref({
-    id: props.recipients.id,
-    email: props.recipients.email ?? '',
-    name: props.recipients.name ?? '',
-    is_active: props.recipients.is_active ?? false,
-    metadata: props.recipients.metadata ?? {} as Record<string, string>,
+    id: recipientsData.value.id,
+    email: recipientsData.value.email ?? '',
+    name: recipientsData.value.name ?? '',
+    is_active: recipientsData.value.is_active ?? false,
+    metadata: recipientsData.value.metadata ?? {} as Record<string, string>,
 })
 
 const errors = ref<Record<string, string[]>>({})
@@ -75,7 +75,7 @@ const submit = () => {
     errors.value = {}
 
     router.put(
-        recipientsUpdate(form.value.id).url,
+        blasting.recipients.update(form.value.id).url,
         {
             email: form.value.email,
             name: form.value.name || null,
@@ -145,7 +145,7 @@ const submit = () => {
                         </button>
                     </div>
 
-                    <div  class="space-y-1">
+                    <div class="space-y-1">
                         <div v-for="(value, key) in form.metadata" :key="key"
                             class="flex justify-between  px-3 py-1 rounded">
                             <span class="text-sm">{{ key }}: {{ value }}</span>
@@ -161,15 +161,24 @@ const submit = () => {
                     </p>
                     <label>Data Meta</label>
                     <div class="bg-gray-100 text-gray-800 p-2 text-xs rounded">
-                      {{ form.metadata }}
+                        {{ form.metadata }}
                     </div>
                 </div>
 
                 <!-- ACTION -->
-                <div class="text-right">
+                <div class="text-right flex justify-end gap-5">
+                    <div class="text-right">
+                        <Link :href="blasting.recipients.index().url">
+                        <button
+                            class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
+                            Cancel
+                        </button>
+                        </Link>
+                    </div>
+
                     <button type="submit" :disabled="isLoading"
                         class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
-                        Save Recipient
+                        Update Recipient
                     </button>
                 </div>
             </form>

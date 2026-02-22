@@ -45,19 +45,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
         ->name('dashboard');
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Email Management
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('email')->name('email.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::post('/import', [UserController::class, 'import'])->name('import');
-        Route::delete('/delete-all', [UserController::class, 'deleteAllEmail'])->name('deleteAll');
-    });
-
-
     /*
     |--------------------------------------------------------------------------
     | Template Management
@@ -125,7 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         | Global Recipients
         |--------------------------------------------------------------------------
         */
-        Route::resource('recipients', BlastingRecipientController::class);
+        Route::resource('recipients', BlastingRecipientController::class)->name('*', 'recipients');
 
         Route::post(
             'recipients/import',

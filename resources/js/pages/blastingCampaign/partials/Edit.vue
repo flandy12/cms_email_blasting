@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { blastingCampaigns, blastingCampaignsUpdate } from '@/routes'
 import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
+import blasting from '@/routes/blasting';
 
 const props = defineProps<{
   templates: Array<{
@@ -23,7 +23,7 @@ const props = defineProps<{
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Campaign', href: blastingCampaigns().url },
+  { title: 'Campaign', href: blasting.campaigns.index().url },
   { title: 'Edit Campaign', href: '#' },
 ]
 
@@ -91,7 +91,7 @@ const submit = () => {
 
   // console.log('Form submitted:', form.value);
   router.put(
-    blastingCampaignsUpdate(props.campaign.id).url,
+    blasting.campaigns.update(props.campaign.id).url,
     {
       template_id: form.value.template_id,
       name: form.value.name,
@@ -160,13 +160,13 @@ const submit = () => {
 
         <!-- ACTION -->
         <div class="text-right space-x-3">
-           <button type="button" @click="router.visit(blastingCampaigns().url)"
-            class="px-4 py-2 bg-gray-500 text-white rounded-lg disabled:opacity-60">
+           <button type="button" @click="router.visit(blasting.campaigns.index().url)"
+            class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
             Batal
           </button>
           <button type="submit" :disabled="isLoading"
-            class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
-            Save Campaign
+            class="px-4 py-2 cursor-pointer  bg-primary text-black rounded-lg disabled:opacity-60">
+            Update Campaign
           </button>
         </div>
       </form>

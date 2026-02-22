@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { blastingCampaigns, blastingCampaignsCreate, dashboard, email, template, templateCreate, log, recipientsCreate, recipients } from '@/routes';
+import {  dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
@@ -25,6 +25,11 @@ import {
     BookOpen,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import recipients from '@/routes/blasting/recipients';
+import log from '@/routes/log';
+import templates from '@/routes/templates';
+import blasting from '@/routes/blasting';
+import campaigns from '@/routes/blasting/campaigns';
 
 const mainNavItems: NavItem[] = [
     {
@@ -40,15 +45,15 @@ const mainNavItems: NavItem[] = [
         children: [
             {
                 title: 'Campaign List',
-                href: blastingCampaigns(),
+                href: campaigns.index(),
             },
             {
                 title: 'Templates',
-                href: template(),
+                href: templates.index(),
             },
             {
                 title: 'Logs',
-                href: log(),
+                href: log.index(),
             },
         ],
     },
@@ -57,23 +62,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Recipients',
         icon: Users,
-        children: [
-            {
-                title: 'Master Recipients',
-                href: recipients().url,
-            },
-            {
-                title: 'Create Recipient',
-                href: recipientsCreate().url,
-            },
-        ],
-    },
-
-    // 🔹 MASTER EMAIL
-    {
-        title: 'Email',
-        href: email(),
-        icon: Mail,
+        href: recipients.index(),
     },
 ];
 

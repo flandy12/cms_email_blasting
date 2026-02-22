@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { blastingCampaigns, blastingCampaignsCreate, blastingCampaignsEdit } from '@/routes'
 import { Head, Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import { Plus } from 'lucide-vue-next'
+import blasting from '@/routes/blasting'
 
 const props = defineProps<{
   campaigns: {
@@ -31,7 +31,7 @@ const props = defineProps<{
 const campaigns = ref(props.campaigns)
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Campaign', href: blastingCampaignsCreate().url },
+  { title: 'Campaign', href: blasting.campaigns.index() },
 ]
 
 const formatDatetime = (value: string | null) => {
@@ -65,7 +65,7 @@ const formatDatetime = (value: string | null) => {
 
     <!-- Absolute Plus Button -->
     <div class="flex justify-end">
-      <Link :href="blastingCampaignsCreate()"
+      <Link :href="blasting.campaigns.create().url"
         class=" z-10 flex h-12 w-48 rounded items-center justify-center bg-primary text-black shadow hover:bg-primary/90 transition"
         aria-label="Add Template">
         <span class="mr-2">Add Template</span>
@@ -121,7 +121,7 @@ const formatDatetime = (value: string | null) => {
             </td>
 
             <td class="px-6 py-4 text-center space-x-2 ">
-              <Link :href="blastingCampaignsEdit(campaign.id).url" class="cursor-pointer">
+              <Link :href="blasting.campaigns.show(campaign.id).url" class="cursor-pointer">
                 <button class="px-4 py-2 rounded-lg bg-primary text-black cursor-pointer">
                   Edit
                 </button>

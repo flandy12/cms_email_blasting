@@ -43,7 +43,7 @@ class BlastingCampaignService
     /* =========================
        FIND
     ========================= */
-    public function findOrFail(int $id): BlastingCampaign
+public function findOrFail(int $id): BlastingCampaign
     {
         return BlastingCampaign::with('template')
             ->findOrFail($id);

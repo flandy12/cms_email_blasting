@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { recipients, recipientsStore } from '@/routes'
 import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
+import blasting from '@/routes/blasting'
 
 /* =========================
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Recipients', href: recipients().url },
+    { title: 'Recipients', href: blasting.recipients.index().url },
     { title: 'Add Recipient', href: '#' },
 ]
 
@@ -59,7 +59,7 @@ const submit = () => {
     errors.value = {}
 
     router.post(
-        recipientsStore().url,
+        blasting.recipients.store().url,
         {
             email: form.value.email,
             name: form.value.name || null,

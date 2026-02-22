@@ -86,4 +86,9 @@ class BlastingRecipientService
             BlastingRecipient::insert($rows);
         });
     }
+
+    public function findOrFail(int $id): BlastingRecipient
+    {
+        return BlastingRecipient::findOrFail($id);
+    }
 }

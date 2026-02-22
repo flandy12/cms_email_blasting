@@ -64,19 +64,20 @@ class BlastingRecipientController extends Controller
         $this->service->create($validated);
 
         return redirect()
-            ->route('recipients')
+            ->route('blasting.recipients.index')
             ->with('success', 'Recipient berhasil ditambahkan');
     }
 
     /**
      * =========================
-     * EDIT
+     * Show
      * =========================
      */
-    public function edit(BlastingRecipient $recipient)
+    public function edit($id)
     {
+        $recipients = $this->service->findOrFail($id);
         return Inertia::render('recipient/partials/Edit', [
-            'recipient' => $recipient,
+            'recipients' => $recipients,
         ]);
     }
 
@@ -97,7 +98,7 @@ class BlastingRecipientController extends Controller
         $this->service->update($recipient, $validated);
 
         return redirect()
-            ->route('recipients')
+            ->route('blasting.recipients.index')
             ->with('success', 'Recipient berhasil diperbarui');
     }
 
@@ -111,7 +112,7 @@ class BlastingRecipientController extends Controller
         $this->service->delete($recipient);
 
         return redirect()
-            ->route('recipients')
+            ->route('blasting.recipients.index')
             ->with('success', 'Recipient berhasil dihapus');
     }
 

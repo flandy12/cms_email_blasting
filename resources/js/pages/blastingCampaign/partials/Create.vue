@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { blastingCampaigns, blastingCampaignsStore } from '@/routes'
 import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
+import campaigns from '@/routes/blasting/campaigns'
 
 const props = defineProps<{
     templates: Array<{
@@ -16,7 +16,7 @@ const props = defineProps<{
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Campaign', href: blastingCampaigns().url },
+    { title: 'Campaign', href: campaigns.index() },
     { title: 'Create Campaign', href: '#' },
 ]
 
@@ -40,7 +40,7 @@ const submit = () => {
     errors.value = {}
 
     router.post(
-        blastingCampaignsStore().url,
+        campaigns.store().url,
         {
             template_id: form.value.template_id,
             name: form.value.name,

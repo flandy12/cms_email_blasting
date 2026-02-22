@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { blastingCampaignsCreate, recipientsEdit, recipientsImport } from '@/routes'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Loading from '@/components/Loading.vue'
+import blasting from '@/routes/blasting'
 
 const props = defineProps<{
   recipients: {
@@ -28,18 +28,17 @@ const isLoading = ref(false);
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Recipient', href: blastingCampaignsCreate().url },
+  { title: 'Recipient', href: blasting.recipients.index().url },
 ]
 
 const handleImport = async () => {
-  console.log('Importing file:', file.value);
   if (!file.value) return
   isLoading.value = true;
   const formData = new FormData()
   formData.append('file', file.value)
 
   try {
-    await router.post(recipientsImport().url, formData, {
+    await router.post(blasting.recipients.import(), formData, {
       forceFormData: true,
       onSuccess: () => {
         isLoading.value = false;
@@ -57,7 +56,7 @@ const handleImport = async () => {
 
 const recipientDelete = (id: number) => {
   isLoading.value = true;
-  router.delete(`/recipients/${id}`, {
+  router.delete(blasting.recipients.destroy(id), {
     onSuccess: () => {
       isLoading.value = false;
       router.reload()
@@ -80,9 +79,15 @@ const recipientDelete = (id: number) => {
       </div>
       <!--import Dialog -->
       <div class="text-end me-5 mb-5">
-        <button command="show-modal" commandfor="dialog-import"
-          class="rounded-md bg-primary px-2.5 py-1.5 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Import
-          Data</button>
+        <div class="flex gap-5 justify-end">
+          <button command="show-modal" commandfor="dialog-import"
+            class="rounded-md bg-primary px-2.5 py-1.5 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Import
+            Data</button>
+
+          <button command="show-modal" commandfor="dialog-import"
+            class="rounded-md bg-gray-400 px-2.5 py-1.5 text-sm font-semibold text-black cursor-pointer inset-ring inset-ring-white/5 hover:bg-primary">Add
+            Recipient</button>
+        </div>
         <el-dialog>
           <dialog id="dialog-import" aria-labelledby="dialog-title"
             class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-transparent">
@@ -159,7 +164,6 @@ const recipientDelete = (id: number) => {
         </dialog>
       </el-dialog>
 
-
       <table class="w-full divide-y divide-gray-200">
         <thead>
           <tr>
@@ -184,7 +188,7 @@ const recipientDelete = (id: number) => {
             </td>
 
             <td class="px-6 py-4 text-center space-x-2 ">
-              <Link :href="recipientsEdit(recipient.id).url" class="cursor-pointer">
+              <Link :href="blasting.recipients.edit(recipient.id).url" class="cursor-pointer">
                 <button class="px-4 py-2 rounded-lg bg-primary text-black cursor-pointer">
                   Edit
                 </button>

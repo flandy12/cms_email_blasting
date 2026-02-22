@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { email, templateStorePost, template } from '@/routes'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Message from '@/components/Message.vue'
 import Loading from '@/components/Loading.vue'
 import { usePage } from '@inertiajs/vue3'
+import templates from '@/routes/templates'
 
 
 /* =========================
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Template', href: email().url },
+    { title: 'Template', href: templates.index().url },
 ]
 
 /* =========================
@@ -60,6 +60,7 @@ const closeSuccessModal = () => {
 }
 
 const form = ref({
+    id : data.value.id,
     name: data.value.name,
     subject: data.value.subject,
     wording: data.value.wording,
@@ -135,7 +136,7 @@ const submitForm = () => {
     isLoading.value = true
     errors.value = {}
 
-    router.post(templateStorePost.url(), {
+    router.put(templates.update(data.value.id).url, {
         name: form.value.name,
         subject: form.value.subject,
         wording: form.value.wording,
@@ -153,7 +154,7 @@ const submitForm = () => {
         preserveScroll: true,
         onFinish: () => {
             alert('Template Update successfully!');
-            router.visit(template.url());
+            router.visit(templates.index().url);
             isLoading.value = false;
         },
         onError: (err) => {
@@ -215,7 +216,7 @@ const submitForm = () => {
                 <!-- Name -->
                 <div>
                     <label class="block text-sm font-medium">Template Name</label>
-                    <input v-model="form.name" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
+                    <input v-model="form.name" disabled="true" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
                     <div v-if="errors.name" class="text-red-500 text-sm mt-1">
                         {{ errors.name }}
                     </div>
@@ -290,7 +291,7 @@ const submitForm = () => {
 
                 <div class="flex justify-end gap-5">
                     <div class="text-right">
-                        <Link :href="template()">
+                        <Link :href="templates.index().url">
                             <button
                                 class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
                                 Cancel
@@ -301,7 +302,7 @@ const submitForm = () => {
                     <div class="text-right">
                         <button type="submit"
                             class="px-4 py-2 bg-primary text-black font-semibold rounded-lg cursor-pointer hover:bg-green-700">
-                            Save Template
+                            Update Template
                         </button>
                     </div>
                 </div>

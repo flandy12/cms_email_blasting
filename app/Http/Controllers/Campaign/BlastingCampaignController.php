@@ -54,15 +54,16 @@ class BlastingCampaignController extends Controller
         $this->service->create($validated, Auth::id());
 
         return redirect()
-            ->route('blasting_campaigns.index')
+            ->route('blasting.campaigns.index')
             ->with('success', 'Campaign berhasil dibuat');
     }
 
     /* =========================
        SHOW
     ========================= */
-    public function show(BlastingCampaign $blastingCampaign)
+    public function show($id)
     {
+        $blastingCampaign = $this->service->findOrFail($id);
         return Inertia::render('blastingCampaign/partials/Edit', [
             'campaign'  => $blastingCampaign->load('template'),
             'templates' => $this->service->getActiveTemplates(),
@@ -83,7 +84,7 @@ class BlastingCampaignController extends Controller
         $this->service->update($blastingCampaign, $validated);
 
         return redirect()
-            ->route('blasting_campaigns.index')
+            ->route('blasting.campaigns.index')
             ->with('success', 'Campaign berhasil diperbarui');
     }
 
@@ -96,9 +97,9 @@ class BlastingCampaignController extends Controller
             $this->service->delete($blastingCampaign);
 
             return redirect()
-                ->route('blasting_campaigns.index')
-                ->with('success', 'Campaign berhasil dihapus');
+                ->route('blasting.campaigns.index')
 
+                ->with('success', 'Campaign berhasil dihapus');
         } catch (\Exception $e) {
 
             return back()->withErrors([
@@ -116,7 +117,7 @@ class BlastingCampaignController extends Controller
             $blastingCampaign->status !== 'running',
             422,
             'Campaign tidak sedang berjalan'
-        );
+    );
 
         $blastingCampaign->update([
             'status' => 'paused'
