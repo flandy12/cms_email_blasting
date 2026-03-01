@@ -89,7 +89,7 @@ const submit = () => {
   isLoading.value = true
   errors.value = {}
 
-  // console.log('Form submitted:', form.value);
+  
   router.put(
     blasting.campaigns.update(props.campaign.id).url,
     {
@@ -125,9 +125,9 @@ const submit = () => {
     <div class="w-full mx-auto rounded-xl shadow p-6 space-y-6">
       <h2 class="text-lg font-semibold">Edit Blasting Campaign</h2>
 
-      <form @submit.prevent="submit" class="space-y-4">
+      <form @submit.prevent="submit" class="space-y-3">
         <!-- TEMPLATE -->
-        <div>
+        <div class="space-y-3">
           <label class="block text-sm font-medium">Template</label>
           <select v-model="form.template_id" class="input bg-white text-black">
             <option disabled value="">-- Select Template --</option>
@@ -141,7 +141,7 @@ const submit = () => {
         </div>
 
         <!-- NAME -->
-        <div>
+        <div class="space-y-3">
           <label class="block text-sm font-medium">Campaign Name</label>
           <input v-model="form.name" class="input" />
           <p v-if="errors.name" class="error">
@@ -150,7 +150,7 @@ const submit = () => {
         </div>
 
         <!-- SCHEDULE -->
-        <div>
+        <div class="space-y-3">
           <label class="block text-sm font-medium">Schedule (optional)</label>
           <input type="datetime-local" v-model="form.scheduled_at" class="input bg-white text-black" />
           <p v-if="errors.scheduled_at" class="error">

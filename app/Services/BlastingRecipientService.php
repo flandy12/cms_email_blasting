@@ -17,7 +17,7 @@ class BlastingRecipientService
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('email', 'like', "%{$search}%")
-                      ->orWhere('name', 'like', "%{$search}%");
+                        ->orWhere('name', 'like', "%{$search}%");
                 });
             })
             ->orderByDesc('created_at')
@@ -90,5 +90,18 @@ class BlastingRecipientService
     public function findOrFail(int $id): BlastingRecipient
     {
         return BlastingRecipient::findOrFail($id);
+    }
+
+    public function deleteall(): void
+    {
+        DB::transaction(function () {
+            DB::table('blasting_campaign_recipient')->delete();
+
+            DB::table('blasting_recipients')->delete();
+
+            DB::table('blasting_campaigns')->delete();
+        });
+
+        return;
     }
 }

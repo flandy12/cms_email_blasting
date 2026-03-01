@@ -143,4 +143,14 @@ class BlastingRecipientController extends Controller
 
         return back()->with('success', 'Data berhasil diimport');
     }
+
+    public function destroyAll(Request $request)
+    {
+        try {
+            $this->service->deleteAll();
+            return redirect()->route('blasting.recipients.index')->with('success', 'Semua recipient berhasil dihapus');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus semua recipient: ' . $e->getMessage());
+        }
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\BlastingCampaign;
 use App\Models\BlastingTemplate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BlastingCampaignService
 {
@@ -30,7 +31,7 @@ class BlastingCampaignService
             return BlastingCampaign::create([
                 'name'            => $data['name'],
                 'template_id'     => $data['template_id'],
-                'schedule_at'     => $data['schedule_at'] ?? now(),
+                'scheduled_at'     => $data['scheduled_at'] ?? now(),
                 'status'          => 'draft',
                 'total_recipient' => 0,
                 'sent_count'      => 0,
@@ -43,7 +44,7 @@ class BlastingCampaignService
     /* =========================
        FIND
     ========================= */
-public function findOrFail(int $id): BlastingCampaign
+    public function findOrFail(int $id): BlastingCampaign
     {
         return BlastingCampaign::with('template')
             ->findOrFail($id);
@@ -54,9 +55,11 @@ public function findOrFail(int $id): BlastingCampaign
     ========================= */
     public function update(BlastingCampaign $campaign, array $data): BlastingCampaign
     {
-        if (!empty($data['schedule_at'])) {
-            $data['schedule_at'] = Carbon::parse($data['schedule_at'])
-                ->format('Y-m-d H:i:s');
+        if (array_key_exists('scheduled_at', $data)) {
+
+            $data['scheduled_at'] = $data['scheduled_at']
+                ? Carbon::parse($data['scheduled_at'])->format('Y-m-d H:i:s')
+                : null;
         }
 
         $campaign->update($data);
@@ -85,5 +88,19 @@ public function findOrFail(int $id): BlastingCampaign
             ->where('is_active', true)
             ->select('id', 'name')
             ->get();
+    }
+
+    public function deleteAll()
+    {
+        DB::transaction(function () {
+
+            DB::table('blasting_campaign_recipient')->delete();
+
+            DB::table('blasting_campaigns')->delete();
+        });
+
+        return response()->json([
+            'message' => 'All campaigns deleted'
+        ]);
     }
 }

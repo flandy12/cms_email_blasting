@@ -2,6 +2,7 @@
 
 namespace App\Services;
 use App\Models\BlastingTemplate;
+use Illuminate\Support\Facades\DB;
 
 class TemplateService
 {
@@ -54,11 +55,11 @@ class TemplateService
         return $template;
     }
 
-    public function delete($id)
+    public function destroyAll()
     {
-        $template = BlastingTemplate::findOrFail($id);
-        $template->delete();
-        return;
+        DB::table('blasting_templates')->delete();
+        return [];
+
     }
 
 }

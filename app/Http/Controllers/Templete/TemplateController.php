@@ -27,10 +27,8 @@ class TemplateController extends Controller
     }
 
     public function store(Request $request){
-        $data = $this->templateService->store($request);
-
-        dd($data);
-        return redirect()->route('template');
+        $this->templateService->store($request);
+        return redirect()->route('templates.index');
     }
 
     public function edit($id){
@@ -40,11 +38,12 @@ class TemplateController extends Controller
 
     public function update(Request $request, $id){
         $this->templateService->update($request, $id);
-        return redirect()->route('template');
+        return redirect()->route('templates.index');
     }
 
-    public function delete($id){
-        $this->templateService->delete($id);
-        return redirect()->route('template');
+    public function destroyAll(){
+        $this->templateService->destroyAll();
+        return redirect()->route('templates.index')->with('success', 'Semua template berhasil dihapus');
     }
+
 }

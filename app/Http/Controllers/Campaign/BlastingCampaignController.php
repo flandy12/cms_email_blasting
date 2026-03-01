@@ -48,7 +48,7 @@ class BlastingCampaignController extends Controller
         $validated = $request->validate([
             'name'        => ['required', 'string', 'max:150'],
             'template_id' => ['required', 'exists:blasting_templates,id'],
-            'schedule_at' => ['nullable', 'date'],
+            'scheduled_at' => ['nullable', 'date'],
         ]);
 
         $this->service->create($validated, Auth::id());
@@ -73,39 +73,20 @@ class BlastingCampaignController extends Controller
     /* =========================
        UPDATE
     ========================= */
-    public function update(Request $request, BlastingCampaign $blastingCampaign)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'name'        => ['required', 'string', 'max:150'],
             'template_id' => ['required', 'exists:blasting_templates,id'],
-            'schedule_at' => ['nullable', 'date'],
+            'scheduled_at' => ['nullable', 'date'],
         ]);
 
+        $blastingCampaign = $this->service->findOrFail($id);
         $this->service->update($blastingCampaign, $validated);
 
         return redirect()
             ->route('blasting.campaigns.index')
             ->with('success', 'Campaign berhasil diperbarui');
-    }
-
-    /* =========================
-       DELETE
-    ========================= */
-    public function destroy(BlastingCampaign $blastingCampaign)
-    {
-        try {
-            $this->service->delete($blastingCampaign);
-
-            return redirect()
-                ->route('blasting.campaigns.index')
-
-                ->with('success', 'Campaign berhasil dihapus');
-        } catch (\Exception $e) {
-
-            return back()->withErrors([
-                'message' => $e->getMessage(),
-            ]);
-        }
     }
 
     /* =========================
@@ -117,7 +98,7 @@ class BlastingCampaignController extends Controller
             $blastingCampaign->status !== 'running',
             422,
             'Campaign tidak sedang berjalan'
-    );
+        );
 
         $blastingCampaign->update([
             'status' => 'paused'
@@ -163,5 +144,11 @@ class BlastingCampaignController extends Controller
         ]);
 
         return back()->with('success', 'Campaign dibatalkan');
+    }
+
+    public function destroyAll()
+    {
+        $this->service->deleteAll();
+        return redirect()->route('blasting.campaigns.index');
     }
 }

@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = ref({
     template_id: '',
     name: '',
-    schedule_at: '',
+    scheduled_at: '',
 })
 
 const errors = ref<Record<string, string[]>>({})
@@ -44,7 +44,7 @@ const submit = () => {
         {
             template_id: form.value.template_id,
             name: form.value.name,
-            schedule_at: form.value.schedule_at || null,
+            scheduled_at: form.value.scheduled_at || null,
         },
         {
             onFinish: () => {
@@ -71,9 +71,9 @@ const submit = () => {
         <div class="w-full mx-auto rounded-xl shadow p-6 space-y-6">
             <h2 class="text-lg font-semibold">Create Blasting Campaign</h2>
 
-            <form @submit.prevent="submit" class="space-y-4">
+            <form @submit.prevent="submit" class="space-y-3">
                 <!-- TEMPLATE -->
-                <div>
+                <div class="space-y-3">
                     <label class="block text-sm font-medium">Template</label>
                     <select v-model="form.template_id" class="input text-black bg-white">
                         <option value="" class="text-gray-500">-- Select Template --</option>
@@ -87,7 +87,7 @@ const submit = () => {
                 </div>
 
                 <!-- NAME -->
-                <div>
+                <div class="space-y-3">
                     <label class="block text-sm font-medium">Campaign Name</label>
                     <input v-model="form.name" class="input" />
                     <p v-if="errors.name" class="error mt-2">
@@ -96,11 +96,11 @@ const submit = () => {
                 </div>
 
                 <!-- SCHEDULE -->
-                <div class="text-white">
+                <div class=" space-y-3">
                     <label class="block text-sm font-medium">Schedule (optional)</label>
-                    <input type="datetime-local" v-model="form.schedule_at" class="input text-white " />
-                    <p v-if="errors.schedule_at" class="error mt-2">
-                        {{ errors.schedule_at }}
+                    <input type="datetime-local" v-model="form.scheduled_at" class="input bg-white text-black" />
+                    <p v-if="errors.scheduled_at" class="error mt-2">
+                        {{ errors.scheduled_at }}
                     </p>
                 </div>
 
