@@ -169,28 +169,39 @@ const deleteAll = () => {
 
     <!-- IMPORT DIALOG -->
 
-    <dialog id="dialog-import" class="rounded-xl p-6">
+    <dialog id="dialog-import" class="p-0 border-0 bg-transparent">
 
-      <h2 class="text-lg font-semibold mb-4">
-        Import Recipients
-      </h2>
+      <div class="fixed inset-0 bg-black/40 flex items-center justify-center">
 
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
 
-      <input type="file" accept=".xlsx,.xls" @change="(e: any) => file = e.target.files[0]"
-        class="border p-2 w-full mb-4 rounded" />
-
-
-      <div class="flex justify-end gap-3">
-
-        <button command="close" commandfor="dialog-import" class="px-4 py-2 border rounded">
-          Cancel
-        </button>
+          <!-- Title -->
+          <h2 class="text-lg font-semibold mb-4">
+            Import Recipients
+          </h2>
 
 
-        <button @click="handleImport" class="px-4 py-2 bg-primary text-black rounded">
-          Import
-        </button>
+          <!-- File Input -->
+          <input type="file" accept=".xlsx,.xls" @change="(e: any) => file = e.target.files[0]"
+            class="border p-2 w-full mb-5 rounded-lg" />
 
+
+          <!-- Buttons -->
+          <div class="flex justify-end gap-3">
+
+            <button command="close" commandfor="dialog-import" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+              Cancel
+            </button>
+
+
+            <button @click="handleImport" class="px-4 py-2 bg-primary text-black rounded-lg">
+              Import
+            </button>
+
+
+          </div>
+
+        </div>
 
       </div>
 

@@ -114,4 +114,9 @@ class BlastingCampaign extends Model
     {
         return $this->status === 'paused';
     }
+
+    public function recipients()
+    {
+        return $this->hasMany(BlastingRecipient::class);
+    }
 }
