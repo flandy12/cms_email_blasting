@@ -3,102 +3,102 @@
 namespace App\Console\Commands\BlastingCampaign;
 
 use App\Models\BlastingCampaign;
-use Carbon\Carbon;
+use App\Models\BlastingRecipient;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RunBlastingCampaign extends Command
 {
     protected $signature = 'campaign:run';
     protected $description = 'Run scheduled blasting campaigns';
-
     public function handle()
     {
-        DB::beginTransaction();
+        $now = now();
 
-        try {
+        Log::info('Scheduler triggered at ' . $now);
 
-            $now = Carbon::now();
+        $campaigns = BlastingCampaign::with('template')
+            ->where('status', 'draft')
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', $now)
+            ->get();
 
-            // Ambil campaign yang siap jalan + lock supaya tidak double
-            $campaigns = BlastingCampaign::where('status', 'draft')
-                ->whereNotNull('scheduled_at')
-                ->where('scheduled_at', '<=', $now)
-                ->lockForUpdate()
-                ->get();
+        Log::info('Campaign count: ' . $campaigns->count());
 
-            if ($campaigns->isEmpty()) {
-                $this->info('No campaign ready.');
-                DB::commit();
-                return Command::SUCCESS;
+        if ($campaigns->isEmpty()) {
+            return Command::SUCCESS;
+        }
+
+        foreach ($campaigns as $campaign) {
+
+            $campaign->update(['status' => 'running']);
+
+            $recipientTotal = BlastingRecipient::whereNotNull('email')->count();
+
+            Log::info("Recipient total: {$recipientTotal}");
+
+            if ($recipientTotal === 0) {
+                $campaign->update(['status' => 'finished']);
+                continue;
             }
 
-            foreach ($campaigns as $campaign) {
+            $hasError = false;
 
-                $this->info("Processing Campaign ID: {$campaign->id}");
+            BlastingRecipient::whereNotNull('email')
+                ->orderBy('id')
+                ->chunkById(500, function ($recipients) use ($campaign, &$hasError) {
 
-                // Update ke running
-                $campaign->update([
-                    'status' => 'running'
-                ]);
+                    Log::info("Sending chunk of {$recipients->count()} recipients");
 
-                // Kirim recipients per chunk (hindari memory overload)
-                $campaign->recipients()
-                    ->select('id', 'name', 'phone')
-                    ->whereNotNull('phone')
-                    ->chunk(500, function ($recipients) use ($campaign) {
+                    $payload = [
+                        'campaign_id' => $campaign->id,
+                        'name'        => $campaign->name,
+                        'template' => [
+                            'id'      => $campaign->template->id ?? null,
+                            'name'    => $campaign->template->name ?? null,
+                            'subject' => $campaign->template->subject ?? null,
+                            'body'    => $campaign->template->wording ?? null,
+                            'parameters' => $campaign->template->params ?? [],
+                            'url'     => $campaign->template->url ?? null,
+                        ],
+                        'scheduled_at' => optional($campaign->scheduled_at)?->toISOString(),
+                        'recipients'  => $recipients->map(fn($r) => [
+                            'id'    => (int) $r->id,
+                            'name'  => (string) $r->name,
+                            'email' => (string) $r->email,
+                        ])->values()->toArray()
+                    ];
 
-                        $payload = [
-                            'campaign_id' => $campaign->id,
-                            'name'        => $campaign->name,
-                            'template_id' => $campaign->template_id,
-                            'scheduled_at'=> $campaign->scheduled_at,
-                            'recipients'  => $recipients->map(function ($r) {
-                                return [
-                                    'id'    => $r->id,
-                                    'name'  => $r->name,
-                                    'phone' => $r->phone,
-                                ];
-                            })->values()
-                        ];
+                    try {
 
                         $response = Http::timeout(30)
-                            ->retry(2, 1000) // retry 2x delay 1 detik
+                            ->retry(2, 1000)
                             ->post(config('services.n8n.webhook_url'), $payload);
 
+                        Log::info('n8n response', [
+                            'status' => $response->status()
+                        ]);
+
                         if (!$response->successful()) {
-
-                            Log::error('n8n webhook failed', [
-                                'campaign_id' => $campaign->id,
-                                'status'      => $response->status(),
-                                'response'    => $response->body(),
-                            ]);
-
-                            throw new \Exception('Webhook failed');
+                            $hasError = true;
+                            return false;
                         }
-                    });
+                    } catch (\Throwable $e) {
 
-                // Jika semua chunk sukses
-                $campaign->update([
-                    'status' => 'sent'
-                ]);
-            }
+                        $hasError = true;
 
-            DB::commit();
+                        Log::error('n8n connection error', [
+                            'message' => $e->getMessage(),
+                        ]);
 
-        } catch (\Throwable $e) {
+                        return false;
+                    }
+                });
 
-            DB::rollBack();
-
-            Log::error('Campaign scheduler error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-                'file'    => $e->getFile(),
+            $campaign->update([
+                'status' => $hasError ? 'paused' : 'finished'
             ]);
-
-            $this->error($e->getMessage());
         }
 
         return Command::SUCCESS;

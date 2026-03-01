@@ -188,8 +188,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Log
     |--------------------------------------------------------------------------
     */
-    Route::get('/log', fn() => Inertia::render('log/Master'))
-        ->name('log.index');
+    Route::get('/logs', function () {
+        return Inertia::render('Logs');
+    })->name('log.index');
+
+   Route::get('/test', function () {
+        Http::post(config('services.n8n.webhook_url'), [
+            'message' => 'Hello n8n!',
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+        return 'Webhook sent!';
+    })->name('test');
 });
 
 require __DIR__ . '/settings.php';

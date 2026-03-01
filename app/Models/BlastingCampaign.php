@@ -117,6 +117,12 @@ class BlastingCampaign extends Model
 
     public function recipients()
     {
-        return $this->hasMany(BlastingRecipient::class);
+        return $this->belongsToMany(
+            BlastingRecipient::class,
+            'blasting_campaign_recipient',
+            'campaign_id',   // FK ke campaign di pivot
+            'recipient_id'   // FK ke recipient di pivot
+        )->withPivot(['status', 'sent_at', 'error_message'])
+            ->withTimestamps();
     }
 }

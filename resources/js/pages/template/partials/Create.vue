@@ -96,22 +96,42 @@ const dynamicUrlPreview = computed(() => {
 /* =========================
    Final Button URL
 ========================= */
+// const finalButtonUrl = computed(() => {
+//   if (form.value.buttonType === 'none') return ''
+
+//   const url =
+//     form.value.urlType === 'static'
+//       ? form.value.url
+//       : dynamicUrlPreview.value
+
+//   if (!url) return ''
+
+//   if (form.value.buttonType === 'button') return url
+
+//   // WhatsApp Mode
+//   const waText =
+//     `*${form.value.subject}*\n\n` +
+//     `${form.value.wording}\n\n` +
+//     `${url}`
+
+//   return `https://wa.me/?text=${encodeURIComponent(waText)}`
+// })
+
 const finalButtonUrl = computed(() => {
-  if (form.value.buttonType === 'none') return ''
+  if (!form.value.buttonType || form.value.buttonType === 'none') return ''
 
   const url =
     form.value.urlType === 'static'
       ? form.value.url
       : dynamicUrlPreview.value
 
-  if (!url) return ''
+  if (!url || typeof url !== 'string') return ''
 
   if (form.value.buttonType === 'button') return url
 
-  // WhatsApp Mode
   const waText =
-    `*${form.value.subject}*\n\n` +
-    `${form.value.wording}\n\n` +
+    `*${form.value.subject || ''}*\n\n` +
+    `${form.value.wording || ''}\n\n` +
     `${url}`
 
   return `https://wa.me/?text=${encodeURIComponent(waText)}`
@@ -124,32 +144,44 @@ const submitForm = () => {
   isLoading.value = true
   errors.value = {}
 
+  const payload = {
+    name: form.value.name,
+    subject: form.value.subject,
+    wording: form.value.wording,
+
+    button_type: form.value.buttonType, // <-- FIXED
+
+    button_text: form.value.buttonType === 'none'
+      ? null
+      : form.value.buttonText,
+
+    url_type: form.value.buttonType === 'none'
+      ? null
+      : form.value.urlType,
+
+    url: form.value.buttonType === 'none'
+      ? null
+      : form.value.urlType === 'static'
+        ? form.value.url
+        : dynamicUrlPreview.value,
+
+    params: form.value.params,
+  }
+
   router.post(
-    templates.store(),
-    {
-      name: form.value.name,
-      subject: form.value.subject,
-      wording: form.value.wording,
-      button_type: form.value.buttonType,
-      button_text:
-        form.value.buttonType === 'none'
-          ? null
-          : form.value.buttonText,
-      url_type:
-        form.value.buttonType === 'none'
-          ? null
-          : form.value.urlType,
-      url:
-        form.value.buttonType === 'none'
-          ? null
-          : form.value.urlType === 'static'
-            ? form.value.url
-            : dynamicUrlPreview.value,
-      params: form.value.params,
-    },
+    templates.store().url,
+    payload,
     {
       preserveScroll: true,
       onFinish: () => (isLoading.value = false),
+
+      onSuccess: () => {
+        successModal.value = {
+          show: true,
+          message: 'Template berhasil disimpan'
+        }
+      },
+
       onError: (err: any) => {
         Object.keys(err).forEach(key => {
           errors.value[key] = err[key]
@@ -158,6 +190,7 @@ const submitForm = () => {
     }
   )
 }
+
 </script>
 
 <template>

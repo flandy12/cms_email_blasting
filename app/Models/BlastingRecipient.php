@@ -89,4 +89,14 @@ class BlastingRecipient extends Model
     {
         return data_get($this->metadata, $key, $default);
     }
+    public function campaigns()
+    {
+        return $this->belongsToMany(
+            BlastingCampaign::class,
+            'blasting_campaign_recipient',
+            'recipient_id',
+            'campaign_id'
+        )->withPivot(['status', 'sent_at', 'error_message'])
+            ->withTimestamps();
+    }
 }
