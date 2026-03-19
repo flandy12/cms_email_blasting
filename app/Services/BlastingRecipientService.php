@@ -20,6 +20,7 @@ class BlastingRecipientService
                         ->orWhere('name', 'like', "%{$search}%");
                 });
             })
+            ->where('is_active', 1)
             ->orderByDesc('created_at')
             ->paginate($perPage)
             ->withQueryString();
@@ -62,7 +63,9 @@ class BlastingRecipientService
     ========================= */
     public function delete(BlastingRecipient $recipient): void
     {
-        $recipient->delete();
+        $recipient->update([
+            'is_active' => 0
+        ]);
     }
 
     /* =========================
@@ -92,16 +95,16 @@ class BlastingRecipientService
         return BlastingRecipient::findOrFail($id);
     }
 
-    public function deleteall(): void
+    public function resetAll(): void
     {
         DB::transaction(function () {
-            DB::table('blasting_campaign_recipient')->delete();
 
-            DB::table('blasting_recipients')->delete();
-
-            DB::table('blasting_campaigns')->delete();
+            DB::table('blasting_recipients')
+                ->where('is_active', 1)
+                ->update([
+                    'is_active' => 0,
+                    'updated_at' => now(),
+                ]);
         });
-
-        return;
     }
 }

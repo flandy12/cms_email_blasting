@@ -22,6 +22,7 @@ const props = defineProps<{
 }>()
 
 const recipients = ref(props.recipients)
+const dialogImport = ref(null)
 
 
 /* =========================
@@ -95,20 +96,35 @@ Delete All
 ========================= */
 
 const deleteAll = () => {
-
   if (!confirm('Delete all recipients?')) return
 
   isLoading.value = true
 
-  router.delete(
-    blasting.recipients.destroyAll(),
-    {
-      onFinish: () => {
-        isLoading.value = false
-      }
-    }
-  )
+  router.delete(blasting.recipients.destroyAll(), {
+    preserveScroll: true,
 
+    onStart: () => {
+      isLoading.value = true
+    },
+
+    onFinish: () => {
+      isLoading.value = false
+    },
+
+    onError: (errors) => {
+      console.error(errors)
+      alert('Failed to delete data')
+    },
+
+    onSuccess: () => {
+      alert('All data successfully reset');
+      // ✅ CLOSE MODAL
+      dialogImport.value?.close();
+
+      // optional reset file
+      file.value = null
+    }
+  })
 }
 
 </script>
@@ -189,16 +205,15 @@ const deleteAll = () => {
           <!-- Buttons -->
           <div class="flex justify-end gap-3">
 
-            <button command="close" commandfor="dialog-import" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <button command="close" commandfor="dialog-import" class="px-4 py-2 border rounded-lg hover:bg-gray-900">
               Cancel
             </button>
 
 
-            <button @click="handleImport" class="px-4 py-2 bg-primary text-black rounded-lg">
-              Import
+            <button @click="handleImport" :disabled="isLoading" class="px-4 py-2 bg-primary text-black rounded-lg">
+              <span v-if="!isLoading">Import</span>
+              <span v-else>Loading...</span>
             </button>
-
-
           </div>
 
         </div>
@@ -241,7 +256,7 @@ const deleteAll = () => {
 
         <tbody>
 
-          <tr v-for="(recipient, index) in recipients.data" :key="recipient.id" class="border-b hover:bg-gray-50">
+          <tr v-for="(recipient, index) in recipients.data" :key="recipient.id" class="border-b hover:bg-gray-800">
 
             <td class="px-6 py-4">
 
@@ -265,7 +280,8 @@ const deleteAll = () => {
               <Link :href="blasting.recipients.edit(recipient.id).url" class="px-4 py-2 bg-primary rounded text-black">
                 Edit
               </Link>
-              <button @click="recipientDelete(recipient.id)" class="px-4 py-2 bg-red-500 text-white rounded">
+              <button @click="recipientDelete(recipient.id)"
+                class="px-4 py-2 bg-red-500 text-white rounded cursor-pointer">
                 Delete
               </button>
 

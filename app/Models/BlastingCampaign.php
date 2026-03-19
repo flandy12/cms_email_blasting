@@ -119,7 +119,7 @@ class BlastingCampaign extends Model
     {
         return $this->belongsToMany(
             BlastingRecipient::class,
-            'blasting_campaign_recipient',
+            'blasting_campaign_recipients',
             'campaign_id',   // FK ke campaign di pivot
             'recipient_id'   // FK ke recipient di pivot
         )->withPivot(['status', 'sent_at', 'error_message'])

@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blasting_campaign_recipient', function (Blueprint $table) {
+        Schema::create('blasting_campaign_recipients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_id')->constrained('blasting_campaigns')->cascadeOnDelete();
-            $table->foreignId('recipient_id')->constrained('blasting_recipients')->cascadeOnDelete();
+            $table->bigInteger('campaign_id');
+            $table->bigInteger('recipient_id');
             $table->enum('status', ['pending', 'sent', 'failed'])->default('pending');
             $table->dateTime('sent_at')->nullable();
             $table->text('error_message')->nullable();
             $table->timestamps();
-
-            $table->unique(['campaign_id', 'recipient_id']);
         });
     }
 

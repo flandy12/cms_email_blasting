@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\BlastingCampaign;
+use App\Models\BlastingCampaignRecipient;
 use App\Models\BlastingRecipient;
 use App\Models\BlastingTemplate;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -27,22 +29,9 @@ class BlastingCampaignService
     ========================= */
     public function create(array $data, int $userId): BlastingCampaign
     {
-        // return DB::transaction(function () use ($data, $userId) {
-
-        //     return BlastingCampaign::create([
-        //         'name'            => $data['name'],
-        //         'template_id'     => $data['template_id'],
-        //         'scheduled_at'    => $data['scheduled_at'] ?? now(),
-        //         'status'          => 'draft', // ✅ spasi dihapus
-        //         'total_recipient' => 0,
-        //         'sent_count'      => 0,
-        //         'failed_count'    => 0,
-        //         'created_by'      => $userId,
-        //     ]);
-        // });
         return DB::transaction(function () use ($data, $userId) {
 
-            // 1️⃣ Create campaign
+            // Create campaign
             $campaign = BlastingCampaign::create([
                 'name'         => $data['name'],
                 'template_id'  => $data['template_id'],
@@ -50,7 +39,7 @@ class BlastingCampaignService
                 'created_by'   => $userId,
             ]);
 
-            // 2️⃣ Ambil semua recipient aktif
+            // Ambil semua recipient aktif
             $recipients = BlastingRecipient::where('is_active', true)
                 ->whereNotNull('email')
                 ->get(['id']);
@@ -59,7 +48,7 @@ class BlastingCampaignService
                 return $campaign; // Tidak ada recipient
             }
 
-            // 3️⃣ Siapkan pivot data
+            // Siapkan pivot data
             $pivotData = [];
 
             foreach ($recipients as $recipient) {
@@ -70,10 +59,10 @@ class BlastingCampaignService
                 ];
             }
 
-            // 4️⃣ Attach ke pivot
+            // Attach ke pivot
             $campaign->recipients()->attach($pivotData);
 
-            // 5️⃣ Update total recipient
+            // Update total recipient
             $campaign->update([
                 'total_recipient' => count($pivotData)
             ]);
@@ -96,16 +85,98 @@ class BlastingCampaignService
     ========================= */
     public function update(BlastingCampaign $campaign, array $data): BlastingCampaign
     {
-        if (array_key_exists('scheduled_at', $data)) {
+        return DB::transaction(function () use ($campaign, $data) {
 
-            $data['scheduled_at'] = $data['scheduled_at']
-                ? Carbon::parse($data['scheduled_at'])->format('Y-m-d H:i:s')
+            $scheduledAt = $campaign->scheduled_at
+                ? Carbon::parse($campaign->scheduled_at)
                 : null;
-        }
 
-        $campaign->update($data);
+            $isRunningToday = $scheduledAt
+                && $scheduledAt->isToday()
+                && in_array($campaign->status, ['running', 'processing']);
 
-        return $campaign;
+            $alreadyExecuted = $campaign->sent_count > 0;
+
+            // Normalisasi scheduled_at
+            if (array_key_exists('scheduled_at', $data)) {
+                $data['scheduled_at'] = $data['scheduled_at']
+                    ? Carbon::parse($data['scheduled_at'])->format('Y-m-d H:i:s')
+                    : null;
+            }
+
+            /**
+             * 🔁 CASE 1: Sudah jalan / sedang jalan → clone campaign
+             */
+            if ($alreadyExecuted || $isRunningToday) {
+
+                $newCampaignData = array_merge(
+                    $campaign->only([
+                        'template_id',
+                        'name',
+                        'scheduled_at',
+                        'status',
+                        'total_recipient'
+                    ]),
+                    $data
+                );
+
+                $newCampaignData['status'] = 'scheduled';
+                $newCampaignData['sent_count'] = 0;
+                $newCampaignData['failed_count'] = 0;
+                $newCampaignData['created_by'] = Auth::id();
+
+                $newCampaign = BlastingCampaign::create($newCampaignData);
+
+                // 🔥 Insert recipients dengan chunk + bulk insert
+                BlastingRecipient::select('id')
+                    ->chunkById(500, function ($recipients) use ($newCampaign) {
+
+                        $insertData = [];
+
+                        foreach ($recipients as $recipient) {
+                            $insertData[] = [
+                                'campaign_id' => $newCampaign->id,
+                                'recipient_id' => $recipient->id,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+
+                        DB::table('blasting_campaign_recipients')->insert($insertData);
+                    });
+
+                return $newCampaign;
+            }
+
+            /**
+             * 🔁 CASE 2: Belum jalan → update langsung
+             */
+            $campaign->update($data);
+
+            // 🔥 sync recipients (optional: truncate dulu biar tidak duplicate)
+            DB::table('blasting_campaign_recipients')
+                ->where('campaign_id', $campaign->id)
+                ->delete();
+
+            BlastingRecipient::select('id')
+                ->chunkById(500, function ($recipients) use ($campaign) {
+
+                    $insertData = [];
+
+                    foreach ($recipients as $recipient) {
+                        $insertData[] = [
+                            'campaign_id' => $campaign->id,
+                            'recipient_id' => $recipient->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    DB::table('blasting_campaign_recipients')->insert($insertData);
+                });
+
+            return $campaign;
+        });
     }
 
     /* =========================
@@ -135,7 +206,7 @@ class BlastingCampaignService
     {
         DB::transaction(function () {
 
-            DB::table('blasting_campaign_recipient')->delete();
+            DB::table('blasting_campaign_recipients')->delete();
 
             DB::table('blasting_campaigns')->delete();
         });

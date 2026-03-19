@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('blasting_recipients', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('name')->nullable();
             $table->json('metadata')->nullable();
             $table->boolean('is_active')->default(true);

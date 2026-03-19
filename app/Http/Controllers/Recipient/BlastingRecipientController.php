@@ -144,13 +144,23 @@ class BlastingRecipientController extends Controller
         return back()->with('success', 'Data berhasil diimport');
     }
 
-    public function destroyAll(Request $request)
+    public function destroyAll()
     {
         try {
-            $this->service->deleteAll();
-            return redirect()->route('blasting.recipients.index')->with('success', 'Semua recipient berhasil dihapus');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus semua recipient: ' . $e->getMessage());
+            $this->service->resetAll();
+
+            return redirect()
+                ->route('blasting.recipients.index')
+                ->with([
+                    'success' => 'Semua recipient berhasil di-reset'
+                ]);
+        } catch (\Throwable $e) {
+
+            return redirect()
+                ->back()
+                ->withErrors([
+                    'error' => 'Gagal reset recipient'
+                ]);
         }
     }
 }

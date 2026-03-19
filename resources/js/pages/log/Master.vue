@@ -1,95 +1,158 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { email } from '@/routes';
-import { Head } from '@inertiajs/vue3';
-import { Upload } from 'lucide-vue-next';
-import { ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue'
+import { Head, router } from '@inertiajs/vue3'
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Log',
-        href: email().url,
-    },
-];
+/**
+ * 🔒 Type safety (biar gak any)
+ */
+interface LogItem {
+    id: number
+    status: 'sent' | 'failed' | 'pending'
+    created_at: string
 
-// Ref untuk input file
-const fileInput = ref<HTMLInputElement | null>(null);
+    // dari relasi recipient (opsional)
+    name?: string
+    email?: string
+    phone?: string
+}
 
-// Fungsi klik tombol import
-const handleImport = () => {
-    fileInput.value?.click(); // memicu klik input file
-};
+interface PaginatedLogs {
+    data: LogItem[]
+    links: {
+        url: string | null
+        label: string
+        active: boolean
+    }[]
+    current_page: number
+    per_page: number
+}
 
-// Fungsi ketika file dipilih
-const handleFileChange = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
-        console.log('File dipilih:', file.name);
-        // TODO: Kirim file ke server via Inertia atau API
-    }
-};
+const props = defineProps<{
+    logs: PaginatedLogs
+}>()
+
+const breadcrumbs = [
+    { title: 'Log', href: '#' },
+]
+
+/**
+ * 🔁 Pagination handler
+ */
+const goToPage = (url: string | null) => {
+    if (!url) return
+    router.visit(url, {
+        preserveScroll: true,
+        preserveState: true,
+    })
+}
+
+/**
+ * 🔁 Retry handler (dummy, nanti sambung ke API)
+ */
+const retry = (id: number) => {
+    console.log('Retry ID:', id)
+
+    // contoh kalau mau pakai POST:
+    // router.post(`/logs/retry/${id}`)
+}
 </script>
 
 <template>
-
-    <Head title="Dashboard" />
+    <Head title="Log Pengiriman" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full mx-auto rounded-2xl shadow p-8 space-y-6">
-            <!-- Header + Tombol Import -->
+
+            <!-- Header -->
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-neutral-100">
                     Log Pengiriman
                 </h2>
             </div>
 
-            <!-- Tabel -->
-            <div class="-m-1.5 overflow-x-auto">
-                <div class="p-1.5 min-w-full inline-block align-middle">
-                    <div class="overflow-hidden rounded-lg shadow">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                            <thead class="bg-gray-50 dark:bg-neutral-800">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
-                                        No</th>
-                                    <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
-                                        Name</th>
-                                    <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
-                                        Email</th>
-                                    <th
-                                        class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase ">
-                                        Phone</th>
-                                    <th
-                                        class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase ">
-                                        Status Pengiriman</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                                <tr>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
-                                        1</td>
-                                    <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
-                                        John Brown</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                        john@site.com</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                        088921113833</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium space-x-3">
-                                        <button type="button"
-                                            class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-danger px-5 py-2 text-black disabled:pointer-events-none cursor-pointer">Retry</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                    
+                    <!-- Head -->
+                    <thead class="bg-gray-50 dark:bg-neutral-800">
+                        <tr>
+                            <th class="px-6 py-3 text-xs text-gray-500 uppercase">No</th>
+                            <th class="px-6 py-3 text-xs text-gray-500 uppercase">Email</th>
+                            <th class="px-6 py-3 text-xs text-gray-500 uppercase text-end">Status</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Body -->
+                    <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                        
+                        <!-- Empty -->
+                        <tr v-if="logs.data.length === 0">
+                            <td colspan="5" class="text-center py-6 text-gray-500">
+                                Tidak ada data
+                            </td>
+                        </tr>
+
+                        <!-- Data -->
+                        <tr v-for="(item, index) in logs.data" :key="item.id">
+
+                            <!-- No -->
+                            <td class="px-6 py-4 text-sm text-center">
+                                {{
+                                    (logs.current_page - 1) * logs.per_page + index + 1
+                                }}
+                            </td>
+
+                            <!-- Email -->
+                            <td class="px-6 py-4 text-sm text-center">
+                                {{ item.email ?? '-' }}
+                            </td>
+
+                            <!-- Status -->
+                            <td class="px-6 py-4 text-end text-sm">
+
+                                <span
+                                    class="px-3 py-1 rounded text-xs font-semibold"
+                                    :class="{
+                                        'bg-green-100 text-green-700': item.status === 'sent',
+                                        'bg-red-100 text-red-700': item.status === 'failed',
+                                        'bg-yellow-100 text-yellow-700': item.status === 'pending',
+                                    }"
+                                >
+                                    {{ item.status }}
+                                </span>
+
+                                <!-- Retry -->
+                                <button
+                                    v-if="item.status === 'failed'"
+                                    @click="retry(item.id)"
+                                    class="ml-3 px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                    Retry
+                                </button>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-end mt-4 space-x-1">
+                <button
+                    v-for="(link, i) in logs.links"
+                    :key="i"
+                    v-html="link.label"
+                    @click="goToPage(link.url)"
+                    :disabled="!link.url"
+                    class="px-3 py-1 text-sm rounded border"
+                    :class="{
+                        'bg-blue-500 text-white': link.active,
+                        'text-gray-500 cursor-not-allowed': !link.url
+                    }"
+                />
+            </div>
+
         </div>
     </AppLayout>
 </template>

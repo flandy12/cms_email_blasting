@@ -3,6 +3,7 @@
 use App\Http\Controllers\BlastingCampaignRecipient\BlastingCampaignRecipientController;
 use App\Http\Controllers\Campaign\BlastingCampaignController;
 use App\Http\Controllers\EmailSchedule\EmailScheduleController;
+use App\Http\Controllers\Log\LogsController;
 use App\Http\Controllers\Recipient\BlastingRecipientController;
 use App\Http\Controllers\Templete\TemplateController;
 use App\Http\Controllers\UserController;
@@ -130,32 +131,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         | Global Recipients
         |--------------------------------------------------------------------------
         */
-            
-            Route::delete(
-                'recipients/destroy-all',
-                [BlastingRecipientController::class, 'destroyAll']
-            )->name('recipients.destroyAll');
-         
-            Route::resource('recipients', BlastingRecipientController::class)->name('*', 'recipients');
+        Route::delete(
+            'recipients/destroy-all',
+            [BlastingRecipientController::class, 'destroyAll']
+        )->name('recipients.destroyAll');
+        
+        Route::resource('recipients', BlastingRecipientController::class)->name('*', 'recipients');
 
-            Route::post(
-                'recipients/import',
-                [BlastingRecipientController::class, 'import']
-            )->name('recipients.import');
+        Route::post(
+            'recipients/import',
+            [BlastingRecipientController::class, 'import']
+        )->name('recipients.import');
 
-            Route::patch(
-                'recipients/{recipient}/toggle',
-                [BlastingRecipientController::class, 'toggleStatus']
-            )->name('recipients.toggle');
+        Route::patch(
+            'recipients/{recipient}/toggle',
+            [BlastingRecipientController::class, 'toggleStatus']
+        )->name('recipients.toggle');
 
-
-
-            /*
+        /*
         |--------------------------------------------------------------------------
         | Campaign Recipients (Nested)
         |--------------------------------------------------------------------------
         */
-            Route::prefix('campaigns/{campaign}')
+        Route::prefix('campaigns/{campaign}')
                 ->scopeBindings()
                 ->name('campaigns.')
                 ->group(function () {
@@ -188,9 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Log
     |--------------------------------------------------------------------------
     */
-    Route::get('/logs', function () {
-        return Inertia::render('Logs');
-    })->name('log.index');
+Route::get('/logs', [LogsController::class, 'index'])->name('log.index');
 
    Route::get('/test', function () {
         Http::post(config('services.n8n.webhook_url'), [

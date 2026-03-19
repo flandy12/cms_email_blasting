@@ -15,6 +15,7 @@ class TemplateService
     }
     public function store(Request $request)
     {
+        // Validasi input
         $validated = $request->validate([
             'name'        => 'required|string|max:255',
             'subject'     => 'required|string|max:255',
@@ -26,6 +27,7 @@ class TemplateService
             'params'      => 'nullable|array',
         ]);
 
+        // Simpan template ke database
         BlastingTemplate::create([
             'name'        => $validated['name'],
             'subject'     => $validated['subject'],
@@ -46,20 +48,24 @@ class TemplateService
 
     public function edit($id)
     {
+        // Ambil template berdasarkan ID
         $template = BlastingTemplate::findOrFail($id);
         return $template;
     }
 
     public function update($request, $id)
     {
+        // Ambil template berdasarkan ID
         $template = BlastingTemplate::findOrFail($id);
 
+        // Validasi input
         $request->validate([
             'name' => 'required|string|max:255',
             'subject' => 'required|string|max:255',
             'body' => 'required|string',
         ]);
 
+        // Update template di database
         $template->update([
             'name' => $request->name,
             'subject' => $request->subject,
@@ -72,6 +78,7 @@ class TemplateService
 
     public function destroyAll()
     {
+        // Hapus semua template dari database
         DB::table('blasting_templates')->delete();
         return [];
     }

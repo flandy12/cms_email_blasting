@@ -223,8 +223,6 @@ const deleteAll = () => {
 
             </td>
 
-
-
             <td class="px-6 py-4 text-center">
 
               {{ campaign.sent_count }}
@@ -233,15 +231,13 @@ const deleteAll = () => {
 
             </td>
 
-
-
             <td class="px-6 py-4 text-center">
 
               {{ campaign.failed_count }}
 
             </td>
 
-            <td class="px-6 py-4 text-center space-x-2">
+            <td class="px-6 py-4 text-center space-x-2" v-if="campaign.sent_count <= campaign.total_recipient && campaign.status != 'finished'">
               <Link :href="blasting.campaigns.show(campaign.id).url" class="px-4 py-2 bg-primary rounded text-black">
                 Detail
               </Link>

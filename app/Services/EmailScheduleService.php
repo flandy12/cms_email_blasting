@@ -15,6 +15,7 @@ class EmailScheduleService
     */
     public function paginate(int $perPage = 10)
     {
+        // Ambil jadwal email dengan relasi template dan penerima, urutkan berdasarkan tanggal pembuatan terbaru, dan paginasi
         return EmailSchedule::query()
             ->with('template')
             ->latest()
@@ -28,8 +29,10 @@ class EmailScheduleService
     */
     public function create(array $data): EmailSchedule
     {
+        // Gunakan transaksi database untuk memastikan integritas data saat membuat jadwal email dan penerima terkait
         return DB::transaction(function () use ($data) {
 
+            // 1️⃣ Buat jadwal email baru dengan data yang diberikan
             $schedule = EmailSchedule::create([
                 'email_template_id' => $data['template_id'],
                 'schedule_at'       => $data['schedule_at'],
@@ -37,7 +40,7 @@ class EmailScheduleService
                 'status'            => 'scheduled',
                 'created_by'        => Auth::id(),
             ]);
-
+            // 2️⃣ Buat penerima terkait untuk jadwal email yang baru dibuat
             $schedule->recipients()->createMany(
                 collect($data['recipients'])
                     ->map(fn ($email) => [
@@ -61,12 +64,13 @@ class EmailScheduleService
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | PAUSE
-    |--------------------------------------------------------------------------
+    * PAUSE
+    * Periksa apakah jadwal email dalam status yang dapat dipause (scheduled atau running), jika tidak, lemparkan exception
+    * Jika valid, perbarui status jadwal email menjadi 'paused' dan kembalikan jadwal yang diperbarui
     */
     public function pause(EmailSchedule $schedule): EmailSchedule
     {
+        
         if (!in_array($schedule->status, ['scheduled', 'running'])) {
             throw new \Exception('Schedule tidak bisa dipause');
         }

@@ -20,7 +20,7 @@ class BlastingCampaignRecipientService
                 'blasting_recipients.id',
                 'blasting_recipients.name',
                 'blasting_recipients.phone',
-                'blasting_campaign_recipient.status',
+                'blasting_campaign_recipients.status',
             ])
             ->paginate($perPage);
     }

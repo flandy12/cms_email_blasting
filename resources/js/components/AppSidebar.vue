@@ -22,7 +22,9 @@ import {
     Send,
     Folder,
     BookOpen,
-    Menu
+    Menu,
+    Logs,
+    TimerIcon
 } from 'lucide-vue-next'
 
 import { ref } from 'vue'
@@ -36,6 +38,7 @@ import templates from '@/routes/templates'
 import log from '@/routes/log'
 
 import type { NavItem } from '@/types'
+import { DatePicker } from 'reka-ui/namespaced'
 
 
 /* =========================
@@ -64,31 +67,25 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Blasting Campaign',
         icon: Send,
-        children: [
-
-            {
-                title: 'Campaign List',
-                href: campaigns.index()
-            },
-
-            {
-                title: 'Templates',
-                href: templates.index()
-            },
-
-            {
-                title: 'Logs',
-                href: log.index()
-            }
-
-        ]
-
+        href: templates.index()
     },
 
     {
         title: 'Recipients',
         icon: Users,
         href: recipients.index()
+    },
+    
+    {
+        title: 'Schedule List',
+        icon: TimerIcon,
+        href: campaigns.index()
+    },
+
+    {
+        title: 'Logs',
+        icon: Logs,
+        href: log.index()
     }
 
 ]

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('blasting_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_id');
+            $table->bigInteger('campaign_id');
             $table->string('email');
             $table->enum('status', ['sent', 'failed']);
             $table->text('response')->nullable();
