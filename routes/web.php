@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\BlastingCampaignRecipient\BlastingCampaignRecipientController;
 use App\Http\Controllers\Campaign\BlastingCampaignController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\EmailSchedule\EmailScheduleController;
 use App\Http\Controllers\Log\LogsController;
 use App\Http\Controllers\Recipient\BlastingRecipientController;
 use App\Http\Controllers\Templete\TemplateController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -44,8 +45,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Dashboard
     |--------------------------------------------------------------------------
     */
-    Route::get('/dashboard', fn() => Inertia::render('Dashboard'))
+    Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Template Users 
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('users', UserController::class)->names('users');
 
     /*
     |--------------------------------------------------------------------------
@@ -186,16 +195,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Log
     |--------------------------------------------------------------------------
     */
-Route::get('/logs', [LogsController::class, 'index'])->name('log.index');
+   Route::get('/logs', [LogsController::class, 'index'])->name('log.index');
 
-   Route::get('/test', function () {
-        Http::post(config('services.n8n.webhook_url'), [
-            'message' => 'Hello n8n!',
-            'timestamp' => now()->toDateTimeString(),
-        ]);
-        return 'Webhook sent!';
-    })->name('test');
 });
+
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/api.php';

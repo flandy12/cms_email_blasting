@@ -58,7 +58,7 @@ const deleteAll = () => {
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3 px-5">
 
       <div>
-        <h1 class="text-2xl font-semibold">
+      <h1 class="text-2xl font-semibold">
           Template Management
         </h1>
 

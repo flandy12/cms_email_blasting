@@ -34,8 +34,8 @@ class RunBlastingCampaign extends Command
 
             // 🔒 Lock campaign
             $updated = BlastingCampaign::where('id', $campaign->id)
-                ->where('status', 'draft');
-                // ->update(['status' => 'running']);
+                ->where('status', 'draft')
+                ->update(['status' => 'running']);
 
             if (!$updated) {
                 continue;
@@ -61,7 +61,7 @@ class RunBlastingCampaign extends Command
                 ->orderBy('id')
                 ->chunkById(500, function ($recipients) use ($campaign, &$success, &$failed) {
 
-                    // 🔥 KIRIM SEKALIGUS (ARRAY)
+                    // KIRIM SEKALIGUS (ARRAY)
                     $payload = $recipients->map(function ($recipient) use ($campaign) {
                         return [
                             'campaign_id' => $campaign->id,

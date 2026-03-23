@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import campaigns from '@/routes/blasting/campaigns'
+import blasting from '@/routes/blasting'
 
 const props = defineProps<{
     templates: Array<{
@@ -75,9 +76,9 @@ const submit = () => {
                 <!-- TEMPLATE -->
                 <div class="space-y-3">
                     <label class="block text-sm font-medium">Template</label>
-                    <select v-model="form.template_id" class="input text-black bg-white">
-                        <option value="" class="text-gray-500">-- Select Template --</option>
-                        <option class="text-black bg-white" v-for="t in props.templates" :key="t.id" :value="t.id">
+                    <select v-model="form.template_id" class="input text-white  bg-gray-600/50">
+                        <option value="" class="text-white">-- Select Template --</option>
+                        <option class="text-black  bg-gray-900/50" v-for="t in props.templates" :key="t.id" :value="t.id">
                             {{ t.name }}
                         </option>
                     </select>
@@ -104,8 +105,13 @@ const submit = () => {
                     </p>
                 </div>
 
-                <div class="text-right">
-                    <button type="submit" class="px-4 py-2 bg-primary text-black rounded-lg">
+                <div class="text-right space-x-3">
+                    <button type="button" @click="router.visit(blasting.campaigns.index().url)"
+                        class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isLoading"
+                        class="px-4 py-2 cursor-pointer  bg-primary text-black rounded-lg disabled:opacity-60">
                         Save Campaign
                     </button>
                 </div>

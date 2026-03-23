@@ -126,12 +126,6 @@ const deleteAll = () => {
           <Plus class="h-5 w-5" />
           Add Campaign
         </Link>
-
-        <button v-if="campaigns.data.length" @click="deleteAll"
-          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-500 text-white shadow">
-          <Trash2 class="h-5 w-5" />
-          Delete All
-        </button>
       </div>
     </div>
 
@@ -178,7 +172,7 @@ const deleteAll = () => {
         <tbody>
 
           <tr v-for="(campaign, index) in campaigns.data" :key="campaign.id"
-            class="border-b hover:bg-gray-50 transition">
+            class="border-b  transition">
 
             <td class="px-6 py-4">
               {{ (campaigns.current_page - 1) * campaigns.per_page + index + 1 }}

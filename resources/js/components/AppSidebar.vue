@@ -24,7 +24,8 @@ import {
     BookOpen,
     Menu,
     Logs,
-    TimerIcon
+    TimerIcon,
+    Users2Icon
 } from 'lucide-vue-next'
 
 import { ref } from 'vue'
@@ -39,6 +40,7 @@ import log from '@/routes/log'
 
 import type { NavItem } from '@/types'
 import { DatePicker } from 'reka-ui/namespaced'
+import users from '@/routes/users'
 
 
 /* =========================
@@ -81,6 +83,13 @@ const mainNavItems: NavItem[] = [
         icon: TimerIcon,
         href: campaigns.index()
     },
+
+    {
+        title: 'Users',
+        icon: Users2Icon,
+        href: users.index()
+    },
+
 
     {
         title: 'Logs',

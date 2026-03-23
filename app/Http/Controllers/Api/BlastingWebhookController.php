@@ -42,24 +42,26 @@ class BlastingWebhookController extends Controller
                 ->first();
 
             $isAlreadySuccess = $existingLog &&
-                $existingLog->status === 'sent' &&
-                $existingLog->response === 'OK';
+                $existingLog->status === 'sent';
 
             // 🚫 Jika sudah sukses sebelumnya → skip increment
             if (!$isAlreadySuccess) {
 
-                if ($data['status'] === 'sent' && ($data['response'] ?? null) === 'OK') {
+                if ($data['status'] === 'sent') {
 
-                    // jika sebelumnya failed → optional balancing
-                    if ($existingLog && $existingLog->status === 'failed') {
-                        $campaign->decrement('failed_count');
+                    if (!$existingLog || $existingLog->status !== 'sent') {
+
+                        if ($existingLog && $existingLog->status === 'failed') {
+                            $campaign->decrement('failed_count');
+                        }
+
+                        $campaign->increment('sent_count');
                     }
-
-                    $campaign->increment('sent_count');
                 } else {
 
-                    // hanya increment failed jika belum pernah success
-                    $campaign->increment('failed_count');
+                    if (!$existingLog || $existingLog->status !== 'failed') {
+                        $campaign->increment('failed_count');
+                    }
                 }
             }
 
@@ -86,6 +88,10 @@ class BlastingWebhookController extends Controller
                     'sent_at' => now(),
                     'error_message' => $data['response'] ?? null,
                 ]
+            );
+
+            BlastingRecipient::where('email', $data['email'])->update(
+                ['is_active' => 0]
             );
 
             // 🏁 Auto finish
