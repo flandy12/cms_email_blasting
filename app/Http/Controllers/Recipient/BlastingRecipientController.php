@@ -55,7 +55,7 @@ class BlastingRecipientController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'email'     => ['required', 'email', 'max:255', 'unique:blasting_recipients,email'],
+            'email'     => ['required', 'email', 'max:255'],
             'name'      => ['nullable', 'string', 'max:150'],
             'metadata'  => ['nullable', 'array'],
             'is_active' => ['nullable', 'boolean'],

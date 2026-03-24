@@ -142,7 +142,7 @@ const submit = () => {
 
         <!-- NAME -->
         <div class="space-y-3">
-          <label class="block text-sm font-medium">Campaign Name</label>
+          <label class="block text-sm font-medium">Schedule Name</label>
           <input v-model="form.name" class="input" />
           <p v-if="errors.name" class="error">
             {{ errors.name }}
@@ -161,12 +161,12 @@ const submit = () => {
         <!-- ACTION -->
         <div class="text-right space-x-3">
            <button type="button" @click="router.visit(blasting.campaigns.index().url)"
-            class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
+            class="px-4 py-2 cursor-pointer bg-gray-500 text-black rounded-lg disabled:opacity-60">
             Batal
           </button>
           <button type="submit" :disabled="isLoading"
             class="px-4 py-2 cursor-pointer  bg-primary text-black rounded-lg disabled:opacity-60">
-            Update Campaign
+            Update Schedule
           </button>
         </div>
       </form>

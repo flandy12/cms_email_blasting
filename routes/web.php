@@ -5,7 +5,9 @@ use App\Http\Controllers\Campaign\BlastingCampaignController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\EmailSchedule\EmailScheduleController;
 use App\Http\Controllers\Log\LogsController;
+use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Recipient\BlastingRecipientController;
+use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\Templete\TemplateController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Http;
@@ -48,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    
+
     /*
     |--------------------------------------------------------------------------
     | Template Users 
@@ -62,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::delete('templates/destroy-all', [TemplateController::class, 'destroyAll'])
-    ->name('templates.destroyAll');
+        ->name('templates.destroyAll');
 
     Route::resource('templates', TemplateController::class)
         ->except(['show']);
@@ -88,7 +90,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('cancel');
         });
 
-
     /*
     |--------------------------------------------------------------------------
     | Blasting Module
@@ -103,66 +104,65 @@ Route::middleware(['auth', 'verified'])->group(function () {
         | Campaigns
         |--------------------------------------------------------------------------
         */
+            // Custom route harus di atas resource supaya tidak bentrok
+            Route::delete('campaigns/destroy-all', [
+                BlastingCampaignController::class,
+                'destroyAll'
+            ])->name('campaigns.destroyAll');
 
-        // Custom route harus di atas resource supaya tidak bentrok
-        Route::delete('campaigns/destroy-all', [
-            BlastingCampaignController::class,
-            'destroyAll'
-        ])->name('campaigns.destroyAll');
+            // Resource route
+            Route::resource('campaigns', BlastingCampaignController::class)
+                ->names('campaigns');
 
-        // Resource route
-        Route::resource('campaigns', BlastingCampaignController::class)
-            ->names('campaigns');
+            // Action tambahan per campaign
+            Route::prefix('campaigns/{campaign}')
+                ->name('campaigns.')
+                ->group(function () {
 
-        // Action tambahan per campaign
-        Route::prefix('campaigns/{campaign}')
-            ->name('campaigns.')
-            ->group(function () {
+                    Route::patch('pause', [
+                        BlastingCampaignController::class,
+                        'pause'
+                    ])->name('pause');
 
-                Route::patch('pause', [
-                    BlastingCampaignController::class,
-                    'pause'
-                ])->name('pause');
+                    Route::patch('resume', [
+                        BlastingCampaignController::class,
+                        'resume'
+                    ])->name('resume');
 
-                Route::patch('resume', [
-                    BlastingCampaignController::class,
-                    'resume'
-                ])->name('resume');
-
-                Route::patch('cancel', [
-                    BlastingCampaignController::class,
-                    'cancel'
-                ])->name('cancel');
-            });
+                    Route::patch('cancel', [
+                        BlastingCampaignController::class,
+                        'cancel'
+                    ])->name('cancel');
+                });
 
             /*
         |--------------------------------------------------------------------------
         | Global Recipients
         |--------------------------------------------------------------------------
         */
-        Route::delete(
-            'recipients/destroy-all',
-            [BlastingRecipientController::class, 'destroyAll']
-        )->name('recipients.destroyAll');
-        
-        Route::resource('recipients', BlastingRecipientController::class)->name('*', 'recipients');
+            Route::delete(
+                'recipients/destroy-all',
+                [BlastingRecipientController::class, 'destroyAll']
+            )->name('recipients.destroyAll');
 
-        Route::post(
-            'recipients/import',
-            [BlastingRecipientController::class, 'import']
-        )->name('recipients.import');
+            Route::resource('recipients', BlastingRecipientController::class)->name('*', 'recipients');
 
-        Route::patch(
-            'recipients/{recipient}/toggle',
-            [BlastingRecipientController::class, 'toggleStatus']
-        )->name('recipients.toggle');
+            Route::post(
+                'recipients/import',
+                [BlastingRecipientController::class, 'import']
+            )->name('recipients.import');
 
-        /*
+            Route::patch(
+                'recipients/{recipient}/toggle',
+                [BlastingRecipientController::class, 'toggleStatus']
+            )->name('recipients.toggle');
+
+            /*
         |--------------------------------------------------------------------------
         | Campaign Recipients (Nested)
         |--------------------------------------------------------------------------
         */
-        Route::prefix('campaigns/{campaign}')
+            Route::prefix('campaigns/{campaign}')
                 ->scopeBindings()
                 ->name('campaigns.')
                 ->group(function () {
@@ -188,6 +188,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     )->name('recipients.retry');
                 });
         });
+    Route::prefix('roles')
+        ->name('roles.')
+        ->group(function () {
+
+            Route::get('/', [RoleController::class, 'index'])->name('index');
+            Route::get('/create', [RoleController::class, 'create'])->name('create');
+            Route::post('/', [RoleController::class, 'store'])->name('store');
+            Route::get('/{id}', [RoleController::class, 'show'])->name('show');
+            Route::put('/{id}', [RoleController::class, 'update'])->name('update');
+            Route::delete('/{id}', [RoleController::class, 'destroy'])->name('destroy');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permissions Management
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('permissions')
+        ->name('permissions.')
+        ->group(function () {
+
+            Route::get('/', [PermissionController::class, 'index'])->name('index');
+            Route::post('/', [PermissionController::class, 'store'])->name('store');
+            Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
+        });
 
 
     /*
@@ -195,9 +220,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Log
     |--------------------------------------------------------------------------
     */
-   Route::get('/logs', [LogsController::class, 'index'])->name('log.index');
-
-});
+    Route::get('/logs', [LogsController::class, 'index'])->name('log.index');
+});;
 
 
 require __DIR__ . '/settings.php';

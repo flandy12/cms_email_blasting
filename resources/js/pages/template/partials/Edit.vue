@@ -14,6 +14,7 @@ import templates from '@/routes/templates'
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Template', href: templates.index().url },
+    { title: 'Edit Template', href: '#' },
 ]
 
 /* =========================
@@ -60,7 +61,7 @@ const closeSuccessModal = () => {
 }
 
 const form = ref({
-    id : data.value.id,
+    id: data.value.id,
     name: data.value.name,
     subject: data.value.subject,
     wording: data.value.wording,
@@ -209,14 +210,15 @@ const submitForm = () => {
         <div class="w-full mx-auto  rounded-2xl shadow p-8 space-y-6">
             <h2 class="text-xl font-semibold">Edit Template</h2>
             <p class="text-sm text-gray-500">
-                Buat template untuk email / WhatsApp blasting
+                Edit template for email / WhatsApp blasting
             </p>
 
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Name -->
                 <div>
                     <label class="block text-sm font-medium">Template Name</label>
-                    <input v-model="form.name" disabled="true" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
+                    <input v-model="form.name" disabled="true" type="text"
+                        class="w-full mt-2 border rounded-lg px-4 py-2" />
                     <div v-if="errors.name" class="text-red-500 text-sm mt-1">
                         {{ errors.name }}
                     </div>
@@ -293,7 +295,7 @@ const submitForm = () => {
                     <div class="text-right">
                         <Link :href="templates.index().url">
                             <button
-                                class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
+                                class="px-4 py-2 bg-gray-300 text-black rounded-lg cursor-pointer hover:bg-gray-500">
                                 Cancel
                             </button>
                         </Link>
@@ -301,7 +303,7 @@ const submitForm = () => {
 
                     <div class="text-right">
                         <button type="submit"
-                            class="px-4 py-2 bg-primary text-black font-semibold rounded-lg cursor-pointer hover:bg-green-700">
+                            class="px-4 py-2 bg-primary text-black rounded-lg cursor-pointer hover:bg-green-700">
                             Update Template
                         </button>
                     </div>

@@ -17,8 +17,8 @@ const props = defineProps<{
    Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Campaign', href: campaigns.index() },
-    { title: 'Create Campaign', href: '#' },
+    { title: 'Schedule List', href: campaigns.index() },
+    { title: 'Create Schedule List', href: '#' },
 ]
 
 /* =========================
@@ -70,7 +70,8 @@ const submit = () => {
         </div>
 
         <div class="w-full mx-auto rounded-xl shadow p-6 space-y-6">
-            <h2 class="text-lg font-semibold">Create Blasting Campaign</h2>
+            <h2 class="text-lg font-semibold">Create Schedule Campaign</h2>
+            <p class="text-sm text-gray-500">Set when this campaign will be sent to recipients</p>
 
             <form @submit.prevent="submit" class="space-y-3">
                 <!-- TEMPLATE -->
@@ -89,7 +90,7 @@ const submit = () => {
 
                 <!-- NAME -->
                 <div class="space-y-3">
-                    <label class="block text-sm font-medium">Campaign Name</label>
+                    <label class="block text-sm font-medium">Schedule Name</label>
                     <input v-model="form.name" class="input" />
                     <p v-if="errors.name" class="error mt-2">
                         {{ errors.name }}
@@ -107,12 +108,12 @@ const submit = () => {
 
                 <div class="text-right space-x-3">
                     <button type="button" @click="router.visit(blasting.campaigns.index().url)"
-                        class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
-                        Batal
+                        class="px-4 py-2 cursor-pointer bg-gray-300 text-black rounded-lg disabled:opacity-60">
+                        Cancel
                     </button>
                     <button type="submit" :disabled="isLoading"
                         class="px-4 py-2 cursor-pointer  bg-primary text-black rounded-lg disabled:opacity-60">
-                        Save Campaign
+                        Save Schedule
                     </button>
                 </div>
             </form>

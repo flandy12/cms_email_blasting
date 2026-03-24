@@ -30,7 +30,7 @@ Breadcrumb
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Campaign',
+    title: 'Schedule List',
     href: blasting.campaigns.index().url
   }
 ]
@@ -90,32 +90,27 @@ const deleteAll = () => {
   )
 
 }
-
 </script>
-
-
-
 
 <template>
 
-  <Head title="Campaigns" />
+  <Head title="Schedule List" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
 
 
     <!-- HEADER -->
-
     <div class="flex justify-between items-center mb-6 px-5">
 
-      <div>
+      <div class="space-y-2">
 
         <h1 class="text-2xl font-semibold">
-          Campaigns
+          Schedule List
         </h1>
 
         <p class="text-sm text-gray-500">
-          Manage email blasting campaigns
+          Manage schedule list
         </p>
 
       </div>
@@ -124,7 +119,7 @@ const deleteAll = () => {
         <Link :href="blasting.campaigns.create().url"
           class="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-black shadow">
           <Plus class="h-5 w-5" />
-          Add Campaign
+          Add Schedule
         </Link>
       </div>
     </div>
@@ -171,8 +166,7 @@ const deleteAll = () => {
 
         <tbody>
 
-          <tr v-for="(campaign, index) in campaigns.data" :key="campaign.id"
-            class="border-b  transition">
+          <tr v-for="(campaign, index) in campaigns.data" :key="campaign.id" class="border-b  transition">
 
             <td class="px-6 py-4">
               {{ (campaigns.current_page - 1) * campaigns.per_page + index + 1 }}
@@ -231,7 +225,8 @@ const deleteAll = () => {
 
             </td>
 
-            <td class="px-6 py-4 text-center space-x-2" v-if="campaign.sent_count <= campaign.total_recipient && campaign.status != 'finished'">
+            <td class="px-6 py-4 text-center space-x-2"
+              v-if="campaign.sent_count <= campaign.total_recipient && campaign.status != 'finished'">
               <Link :href="blasting.campaigns.show(campaign.id).url" class="px-4 py-2 bg-primary rounded text-black">
                 Detail
               </Link>

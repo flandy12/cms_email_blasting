@@ -105,6 +105,7 @@ const submit = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="w-full mx-auto  rounded-xl shadow p-6 space-y-6">
             <h2 class="text-lg font-semibold">Edit Recipient</h2>
+            <p class="text-sm text-gray-500">Update recipient email addresses for blasting.</p>
 
             <form @submit.prevent="submit" class="space-y-4">
                 <!-- EMAIL -->
@@ -167,20 +168,13 @@ const submit = () => {
 
                 <!-- ACTION -->
                 <div class="text-right flex justify-end gap-5">
-                    <div class="text-right">
+                    <div class="text-right space-x-3">
                         <Link :href="blasting.recipients.index().url">
                             <button
-                                class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg cursor-pointer hover:bg-gray-500">
+                                class="px-4 py-2 bg-gray-300 text-black rounded-lg cursor-pointer hover:bg-gray-500">
                                 Cancel
                             </button>
                         </Link>
-                    </div>
-
-                    <div class="text-right space-x-3">
-                        <button type="button" @click="router.visit(blasting.recipients.index().url)"
-                            class="px-4 py-2 cursor-pointer bg-gray-500 text-white rounded-lg disabled:opacity-60">
-                            Batal
-                        </button>
                         <button type="submit" :disabled="isLoading"
                             class="px-4 py-2 bg-primary text-black rounded-lg disabled:opacity-60">
                             Update Recipient

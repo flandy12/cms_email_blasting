@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Message from '@/components/Message.vue'
 import Loading from '@/components/Loading.vue'
-import templates from '@/routes/templates'
-import blasting from '@/routes/blasting'
 import users from '@/routes/users'
 
 /* =========================
@@ -14,6 +12,7 @@ import users from '@/routes/users'
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Users', href: users.index().url },
+    { title: 'Edit Users', href: '#' },
 ]
 
 const props = defineProps(['user']);
@@ -37,6 +36,7 @@ const closeSuccessModal = () => {
   Form State
 ========================= */
 const form = ref({
+    id: props.user ? props.user.id : '',
     name: props.user ? props.user.name : '',
     email: props.user ? props.user.email : '',
 })
@@ -54,8 +54,8 @@ const submitForm = () => {
         email: form.value.email,
     }
 
-    router.post(
-        users.store().url,
+    router.put(
+        users.update(form.value.id).url,
         payload,
         {
             preserveScroll: true,
@@ -92,7 +92,7 @@ const submitForm = () => {
 
         <!-- Success Modal -->
         <div v-if="successModal.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center">
+            <div class="bg-white rounded-2xl text-black shadow-xl w-full max-w-md p-6 text-center">
                 <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
                     <span class="text-green-600 text-2xl">✓</span>
                 </div>
@@ -128,20 +128,20 @@ const submitForm = () => {
                 <div>
                     <label class="block text-sm font-medium">Email</label>
                     <input v-model="form.email" type="text" class="w-full mt-2 border rounded-lg px-4 py-2" />
-                    <p v-if="errors.subject" class="text-red-500 text-sm">
-                        {{ errors.subject }}
+                    <p v-if="errors.email" class="text-red-500 text-sm">
+                        {{ errors.email }}
                     </p>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-5">
                     <Link :href="users.index().url"
-                        class="px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg hover:bg-gray-400">
+                        class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">
                         Cancel
                     </Link>
 
                     <button type="submit"
-                        class="px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-green-700">
+                        class="px-4 py-2 bg-primary text-black rounded-lg hover:bg-green-700">
                         Update User
                     </button>
                 </div>

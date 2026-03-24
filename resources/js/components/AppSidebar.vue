@@ -41,6 +41,8 @@ import log from '@/routes/log'
 import type { NavItem } from '@/types'
 import { DatePicker } from 'reka-ui/namespaced'
 import users from '@/routes/users'
+import roles from '@/routes/roles'
+
 
 
 /* =========================
@@ -67,7 +69,7 @@ const mainNavItems: NavItem[] = [
     },
 
     {
-        title: 'Blasting Campaign',
+        title: 'Template Campaign',
         icon: Send,
         href: templates.index()
     },
@@ -90,6 +92,11 @@ const mainNavItems: NavItem[] = [
         href: users.index()
     },
 
+    {
+        title: 'Roles',
+        icon: Users2Icon,
+        href: roles.index()
+    },
 
     {
         title: 'Logs',

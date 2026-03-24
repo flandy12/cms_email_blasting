@@ -40,23 +40,21 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $users = $this->userService->create($request);
+        return redirect('users.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-      
-    }
+    public function show(string $id) {}
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit($id)
     {
-        $user = $this->userService->edit($id);
+        $user = $this->userService->show($id);
         return Inertia::render('users/partials/Edit')->with(['user' => $user]);
     }
 
@@ -65,7 +63,8 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = $this->userService->update($request, $id);
+        return Inertia::render('users/partials/Edit')->with(['user' => $user]);
     }
 
     /**
