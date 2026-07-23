@@ -68,12 +68,8 @@ class RoleController extends Controller
     {
         $role = $this->service->findById($id);
 
-        return Inertia::render('roles/Edit', [
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'permissions' => $role->permissions->pluck('name')
-            ],
+        return Inertia::render('roles/partials/Edit', [
+            'role' => $role,
             'permissions' => Permission::select('id', 'name')->get()
         ]);
     }
@@ -83,10 +79,6 @@ class RoleController extends Controller
     ========================= */
     public function update(Request $request, $id)
     {
-        // 🔐 Authorization
-        if (!auth()->user()->can('edit role')) {
-            abort(403);
-        }
 
         $validated = $request->validate([
             'name' => 'required|string|unique:roles,name,' . $id,
@@ -106,11 +98,6 @@ class RoleController extends Controller
     ========================= */
     public function destroy($id)
     {
-        // 🔐 Authorization
-        if (!auth()->user()->can('delete role')) {
-            abort(403);
-        }
-
         $this->service->delete($id);
 
         return redirect()

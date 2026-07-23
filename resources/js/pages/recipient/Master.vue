@@ -2,10 +2,21 @@
 
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import Loading from '@/components/Loading.vue'
 import blasting from '@/routes/blasting'
+import { computed, ref } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const permissions = computed<string[]>(() => {
+  return (page.props.auth?.permissions as string[]) ?? []
+})
+
+const can = (permission: string) => {
+  return permissions.value.includes(permission)
+}
 
 
 /* =========================
@@ -136,196 +147,231 @@ const deleteAll = () => {
   <Head title="Recipients" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-
-
-    <!-- Loading Overlay -->
-
-    <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <Loading />
+    <div v-if="!can('recipients.view')" class="flex justify-center items-center h-96 text-gray-500">
+      You don't have permission to access this page.
     </div>
+    <template v-else>
+      <!-- Loading Overlay -->
 
-    <!-- HEADER -->
-
-    <div class="flex justify-between items-center mb-6  px-5">
-
-      <div>
-
-        <h1 class="text-2xl font-semibold">
-          Recipients
-        </h1>
-
-        <p class="text-sm text-gray-500">
-          Manage email recipients
-        </p>
-
+      <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <Loading />
       </div>
 
+      <!-- HEADER -->
+
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 p-6">
+
+        <div>
+
+          <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            Recipients
+          </h1>
 
 
-      <div class="flex gap-3">
+          <p class="mt-2 text-sm text-muted-foreground">
+            Manage email recipients
+          </p>
 
-        <button command="show-modal" commandfor="dialog-import" class="px-4 py-2 rounded-lg bg-primary text-black">
-          Import
-        </button>
+        </div>
 
+        <div class="page-actions space-x-2">
 
-        <Link :href="blasting.recipients.create()" class="px-4 py-2 rounded-lg bg-gray-400 text-black">
-          Add Recipient
-        </Link>
+          <button  v-if="can('recipients.import')" command="show-modal" commandfor="dialog-import"
+            class="btn-outline  btn-primary text-black hover:text-black">
+            Import
+          </button>
 
+          <Link  v-if="can('recipients.create')" :href="blasting.recipients.create()" class="btn-outline">
+            Add Recipient
+          </Link>
 
-        <button v-if="recipients.data.length" @click="deleteAll" class="px-4 py-2 rounded-lg bg-red-500 text-white">
-          Delete All
-        </button>
-
-
-      </div>
-
-    </div>
-
-    <!-- IMPORT DIALOG -->
-
-    <dialog id="dialog-import" class="p-0 border-0 bg-transparent">
-
-      <div class="fixed inset-0 bg-black/40 flex items-center justify-center">
-
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-
-          <!-- Title -->
-          <h2 class="text-lg font-semibold mb-4">
-            Import Recipients
-          </h2>
-
-
-          <!-- File Input -->
-          <input type="file" accept=".xlsx,.xls" @change="(e: any) => file = e.target.files[0]"
-            class="border p-2 w-full mb-5 rounded-lg" />
-
-
-          <!-- Buttons -->
-          <div class="flex justify-end gap-3">
-
-            <button command="close" commandfor="dialog-import" class="px-4 py-2 border rounded-lg hover:bg-gray-900">
-              Cancel
-            </button>
-
-
-            <button @click="handleImport" :disabled="isLoading" class="px-4 py-2 bg-primary text-black rounded-lg">
-              <span v-if="!isLoading">Import</span>
-              <span v-else>Loading...</span>
-            </button>
-          </div>
+          <button v-if="recipients.data.length && can('recipients.delete')" @click="deleteAll" class="btn-danger">
+            Delete All
+          </button>
 
         </div>
 
       </div>
 
-    </dialog>
+      <!-- IMPORT DIALOG -->
 
-    <!-- TABLE -->
+      <dialog id="dialog-import" class="p-0 border-0 bg-transparent">
 
-    <div class="bg-white dark:bg-gray-700/50 shadow rounded-2xl overflow-hidden mx-5">
+        <div class="fixed inset-0 bg-black/40 flex items-center justify-center">
 
-      <table class="w-full">
+          <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
 
-        <thead class="bg-gray-50  dark:bg-gray-600/50  border-b">
-
-          <tr>
-
-            <th class="px-6 py-3 text-left text-xs uppercase">
-              No
-            </th>
-
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Name
-            </th>
-
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Email
-            </th>
-
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Action
-            </th>
-
-          </tr>
-
-        </thead>
+            <!-- Title -->
+            <h2 class="text-lg font-semibold mb-4">
+              Import Recipients
+            </h2>
 
 
+            <!-- File Input -->
+            <input type="file" accept=".xlsx,.xls" @change="(e: any) => file = e.target.files[0]"
+              class="border p-2 w-full mb-5 rounded-lg" />
 
-        <tbody>
 
-          <tr v-for="(recipient, index) in recipients.data" :key="recipient.id" class="border-b hover:bg-gray-800">
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3">
 
-            <td class="px-6 py-4">
-
-              {{ (recipients.current_page - 1) * recipients.per_page + index + 1 }}
-
-            </td>
-
-            <td class="px-6 py-4 text-center">
-
-              {{ recipient.name || '-' }}
-
-            </td>
-
-            <td class="px-6 py-4 text-center">
-
-              {{ recipient.email || '-' }}
-
-            </td>
-
-            <td class="px-6 py-4 text-center space-x-2">
-              <Link :href="blasting.recipients.edit(recipient.id).url" class="px-4 py-2 bg-primary rounded text-black">
-                Edit
-              </Link>
-              <button @click="recipientDelete(recipient.id)"
-                class="px-4 py-2 bg-red-500 text-white rounded cursor-pointer">
-                Delete
+              <button command="close" commandfor="dialog-import"
+                class="px-4 py-2 border rounded-lg hover:btn-danger hover:text-black">
+                Cancel
               </button>
 
-            </td>
 
-          </tr>
+              <button @click="handleImport" :disabled="isLoading" class="px-4 py-2 bg-primary text-black rounded-lg">
+                <span v-if="!isLoading">Import</span>
+                <span v-else>Loading...</span>
+              </button>
+            </div>
 
-          <tr v-if="!recipients.data.length">
+          </div>
 
-            <td colspan="4" class="text-center py-10 text-gray-400">
+        </div>
 
-              No recipients available
+      </dialog>
 
-            </td>
+      <!-- TABLE -->
 
-          </tr>
+      <div class="dashboard-table mx-6">
 
+        <table class="dashboard-data-table">
 
-        </tbody>
+          <thead>
 
-      </table>
+            <tr>
 
-    </div>
+              <th class="w-20">
+                #
+              </th>
 
-    <!-- PAGINATION -->
+              <th class="w-[35%]">
+                Recipient
+              </th>
 
-    <div v-if="recipients.links.length > 3" class="flex justify-end mt-6">
+              <th>
+                Email
+              </th>
 
-      <nav class="flex gap-2">
+              <th class="w-48 text-center">
+                Action
+              </th>
 
-        <Link v-for="(link, i) in recipients.links" :key="i" :href="link.url || ''" preserve-scroll preserve-state
-          class="px-4 py-2 border rounded-lg text-sm" :class="{
+            </tr>
 
-            'bg-primary text-black font-semibold':
-              link.active,
+          </thead>
 
-            'text-gray-400 cursor-not-allowed':
-              !link.url
+          <tbody>
 
-          }" v-html="link.label" />
+            <tr v-for="(recipient, index) in recipients.data" :key="recipient.id">
 
-      </nav>
+              <!-- Number -->
+              <td>
 
-    </div>
+                {{ (recipients.current_page - 1) * recipients.per_page + index + 1 }}
+
+              </td>
+
+              <!-- Recipient -->
+              <td>
+
+                <div class="table-user">
+
+                  <div class="table-avatar">
+
+                    {{ (recipient.name || '?').charAt(0).toUpperCase() }}
+
+                  </div>
+
+                  <div>
+
+                    <div class="table-title">
+
+                      {{ recipient.name || 'Unknown Recipient' }}
+
+                    </div>
+
+                    <div class="table-subtitle">
+
+                      Email Recipient
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+              <!-- Email -->
+              <td class="text-muted">
+
+                {{ recipient.email || '-' }}
+
+              </td>
+
+              <!-- Action -->
+              <td>
+
+                <div class="table-actions">
+
+                  <Link v-if="can('recipients.edit')" :href="blasting.recipients.edit(recipient.id).url" class="btn-outline">
+
+                    Edit
+
+                  </Link>
+
+                  <button v-if="can('recipients.delete')" @click="recipientDelete(recipient.id)" class="btn-danger">
+
+                    Delete
+
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+            <tr v-if="!recipients.data.length">
+
+              <td colspan="4" class="empty-state">
+
+                No recipients available
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <!-- PAGINATION -->
+
+      <div v-if="recipients.links.length > 3" class="flex justify-end mt-6">
+
+        <nav class="flex gap-2">
+
+          <Link v-for="(link, i) in recipients.links" :key="i" :href="link.url || ''" preserve-scroll preserve-state
+            class="px-4 py-2 border rounded-lg text-sm" :class="{
+
+              'bg-primary text-black font-semibold':
+                link.active,
+
+              'text-gray-400 cursor-not-allowed':
+                !link.url
+
+            }" v-html="link.label" />
+
+        </nav>
+
+      </div>
+    </template>
   </AppLayout>
 
 </template>

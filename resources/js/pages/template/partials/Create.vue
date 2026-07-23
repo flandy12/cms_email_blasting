@@ -177,33 +177,63 @@ const submitForm = () => {
   <AppLayout :breadcrumbs="breadcrumbs">
 
     <!-- Loading Overlay -->
-    <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <Loading />
     </div>
 
     <!-- Success Modal -->
-    <div v-if="successModal.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="bg-white rounded-2xl text-black shadow-xl w-full max-w-md p-6 text-center">
-        <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-          <span class="text-green-600 text-2xl">✓</span>
+    <div v-if="successModal.show"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+
+      <div class="modal-card">
+
+        <div class="success-icon">
+
+          ✓
+
         </div>
-        <h3 class="text-lg font-semibold mb-2">Berhasil</h3>
-        <p class="text-sm text-gray-600 mb-6">
+
+        <h3>
+
+          Success
+
+        </h3>
+
+        <p>
+
           {{ successModal.message }}
+
         </p>
-        <button @click="closeSuccessModal" class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
-          OK
+
+        <button @click="closeSuccessModal" class="btn-primary w-full">
+
+          Continue
+
         </button>
+
       </div>
+
     </div>
 
-    <div class="w-full rounded-2xl shadow p-8 space-y-6">
-      <h2 class="text-xl font-semibold">Create New Template</h2>
-      <p class="text-sm text-gray-500">
-        Create templates for email / WhatsApp blasting
-      </p>
+    <div class="px-8 py-6 bg-background min-h-screen">
 
-      <form @submit.prevent="submitForm" class="space-y-6">
+      <div class="mb-8">
+
+        <h2 class="text-2xl font-bold text-foreground">
+
+          Create Email Template
+
+        </h2>
+
+        <p class="text-muted-foreground mt-2">
+
+          Configure reusable templates for Email and WhatsApp campaigns.
+
+        </p>
+
+      </div>
+
+      <form @submit.prevent="submitForm" class="space-y-8">
 
         <!-- Name -->
         <div>
@@ -225,7 +255,11 @@ const submitForm = () => {
 
         <!-- Wording -->
         <div>
-          <label class="block text-sm font-medium">Wording</label>
+          <label class="form-label">
+
+            Message
+
+          </label>
           <Message v-model="form.wording" :button="form.buttonType" :url="finalButtonUrl"
             :button-text="form.buttonText" />
           <p v-if="errors.wording" class="text-red-500 text-sm">
@@ -237,17 +271,17 @@ const submitForm = () => {
         <div>
           <label class="block text-sm font-medium">Button Type</label>
           <div class="flex space-x-2 mt-2">
-            <button type="button" @click="form.buttonType = 'none'"
+            <button type="button" class="toggle-button" @click="form.buttonType = 'none'"
               :class="['btn', form.buttonType === 'none' && 'bg-primary text-black']">
               None
             </button>
 
-            <button type="button" @click="form.buttonType = 'button'"
+            <button class="toggle-button" type="button" @click="form.buttonType = 'button'"
               :class="['btn', form.buttonType === 'button' && 'bg-primary text-black']">
               URL
             </button>
 
-            <button type="button" @click="form.buttonType = 'wa'"
+            <button class="toggle-button" type="button" @click="form.buttonType = 'wa'"
               :class="['btn', form.buttonType === 'wa' && 'bg-primary text-black']">
               WhatsApp
             </button>
@@ -299,15 +333,20 @@ const submitForm = () => {
         </div>
 
         <!-- Actions -->
-        <div class="flex justify-end gap-5">
-          <Link :href="templates.index().url"
-            class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">
+        <div class="flex justify-end gap-4 pt-6 border-t border-border">
+
+          <Link :href="templates.index().url" class="btn-danger">
+
             Cancel
+
           </Link>
 
-          <button type="submit" class="px-4 py-2 bg-primary text-black rounded-lg hover:bg-green-700">
+          <button class="btn-primary">
+
             Save Template
+
           </button>
+
         </div>
 
       </form>

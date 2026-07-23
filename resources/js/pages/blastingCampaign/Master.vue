@@ -2,11 +2,22 @@
 
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
 import type { BreadcrumbItem } from '@/types'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import blasting from '@/routes/blasting'
 
+import { computed, ref } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const permissions = computed<string[]>(() => {
+  return (page.props.auth?.permissions as string[]) ?? []
+})
+
+const can = (permission: string) => {
+  return permissions.value.includes(permission)
+}
 
 /* =========================
 Props
@@ -98,175 +109,182 @@ const deleteAll = () => {
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
+    <div v-if="!can('schedule.view')" class="flex items-center justify-center h-96 text-muted-foreground">
+      You don't have permission to access this page.
+    </div>
+
+    <template v-else>
+      <!-- HEADER -->
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 p-6">
+
+        <div>
+
+          <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            Schedule List
+          </h1>
 
 
-    <!-- HEADER -->
-    <div class="flex justify-between items-center mb-6 px-5">
+          <p class="mt-2 text-sm text-muted-foreground">
+            Manage your email campaign schedule.
+          </p>
 
-      <div class="space-y-2">
+        </div>
 
-        <h1 class="text-2xl font-semibold">
-          Schedule List
-        </h1>
+        <Link :href="blasting.campaigns.create().url" class="flex btn-primary">
 
-        <p class="text-sm text-gray-500">
-          Manage schedule list
-        </p>
+          <Plus class="w-6 h-6" />
 
-      </div>
-
-      <div class="flex gap-3">
-        <Link :href="blasting.campaigns.create().url"
-          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-black shadow">
-          <Plus class="h-5 w-5" />
           Add Schedule
+
         </Link>
+
       </div>
-    </div>
 
-    <!-- TABLE -->
+      <!-- TABLE -->
 
-    <div class="bg-white dark:bg-gray-700/50 shadow rounded-2xl overflow-hidden mx-5">
-      <table class="w-full">
-        <thead class="bg-gray-50 dark:bg-gray-600/50 border-b">
-          <tr>
+      <div class="dashboard-table mx-6">
 
-            <th class="px-6 py-3 text-left text-xs uppercase">
-              No
-            </th>
+        <table class="w-full text-center">
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Name
-            </th>
+          <thead>
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Status
-            </th>
+            <tr>
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Scheduled
-            </th>
+              <th>Campaign</th>
 
+              <th>Status</th>
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Sent
-            </th>
+              <th>Schedule</th>
 
+              <th>Progress</th>
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Failed
-            </th>
+              <th>Failed</th>
 
+              <th>Action</th>
 
-            <th class="px-6 py-3 text-center text-xs uppercase">
-              Action
-            </th>
-          </tr>
-        </thead>
+            </tr>
 
-        <tbody>
+          </thead>
 
-          <tr v-for="(campaign, index) in campaigns.data" :key="campaign.id" class="border-b  transition">
+          <tbody>
 
-            <td class="px-6 py-4">
-              {{ (campaigns.current_page - 1) * campaigns.per_page + index + 1 }}
-            </td>
+            <tr v-for="campaign in campaigns.data" :key="campaign.id">
 
-            <td class="px-6 py-4 text-center font-medium">
+              <td>
 
-              {{ campaign.name }}
+                <div class="flex flex-col text-left">
 
-            </td>
+                  <strong>
 
-            <td class="px-6 py-4 text-center">
+                    {{ campaign.name }}
 
-              <span class="px-3 py-1 rounded-full text-xs font-semibold capitalize" :class="{
+                  </strong>
 
-                'bg-gray-200 text-black':
-                  campaign.status === 'draft',
+                  <small class="text-muted">
 
-                'bg-green-200 text-black':
-                  campaign.status === 'running',
+                    {{ campaign.total_recipient }} recipients
 
-                'bg-yellow-200 text-black':
-                  campaign.status === 'paused',
+                  </small>
 
-                'bg-blue-200 text-black':
-                  campaign.status === 'finished'
+                </div>
 
-              }">
+              </td>
 
-                {{ campaign.status }}
+              <td>
 
-              </span>
+                <span class="status" :class="campaign.status">
 
+                  {{ campaign.status }}
 
-            </td>
+                </span>
 
+              </td>
 
+              <td>
 
-            <td class="px-6 py-4 text-center">
+                {{ formatDatetime(campaign.scheduled_at) }}
 
-              {{ formatDatetime(campaign.scheduled_at) }}
+              </td>
 
-            </td>
+              <td>
 
-            <td class="px-6 py-4 text-center">
+                <div class="progress-wrapper">
 
-              {{ campaign.sent_count }}
-              /
-              {{ campaign.total_recipient }}
+                  <div class="progress">
 
-            </td>
+                    <div class="progress-fill" :style="{
+                      width:
+                        ((campaign.sent_count /
+                          campaign.total_recipient) * 100) + '%'
+                    }">
 
-            <td class="px-6 py-4 text-center">
+                    </div>
 
-              {{ campaign.failed_count }}
+                  </div>
 
-            </td>
+                  <span>
 
-            <td class="px-6 py-4 text-center space-x-2"
-              v-if="campaign.sent_count <= campaign.total_recipient && campaign.status != 'finished'">
-              <Link :href="blasting.campaigns.show(campaign.id).url" class="px-4 py-2 bg-primary rounded text-black">
-                Detail
-              </Link>
-              <button @click="destroy(campaign.id)" class="px-4 py-2 bg-red-500 text-white rounded">
-                Delete
-              </button>
-            </td>
-          </tr>
-          <tr v-if="!campaigns.data.length">
+                    {{ campaign.sent_count }}/{{ campaign.total_recipient }}
 
-            <td colspan="7" class="text-center py-12 text-gray-400">
+                  </span>
 
-              No campaigns available
+                </div>
 
-            </td>
+              </td>
 
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              <td>
 
+                {{ campaign.failed_count }}
 
-    <!-- PAGINATION -->
+              </td>
 
-    <div v-if="campaigns.links.length > 3" class="flex justify-end mt-6">
+              <td>
 
-      <nav class="flex gap-2">
-        <Link v-for="(link, i) in campaigns.links" :key="i" :href="link.url || ''" preserve-scroll preserve-state
-          class="px-4 py-2 border rounded-lg text-sm" :class="{
+                <div class="flex gap-2 justify-center">
 
-            'bg-primary text-black font-semibold':
-              link.active,
+                  <Link class="btn-outline">
 
-            'text-gray-400 cursor-not-allowed':
-              !link.url
+                    Detail
 
-          }" v-html="link.label" />
+                  </Link>
 
-      </nav>
-    </div>
+                  <button class="btn-danger">
+
+                    Delete
+
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <!-- PAGINATION -->
+
+      <div v-if="campaigns.links.length > 3" class="flex justify-end mt-6">
+
+        <nav class="flex gap-2">
+          <Link v-for="(link, i) in campaigns.links" :key="i" :href="link.url || ''" preserve-scroll preserve-state
+            class="px-4 py-2 border rounded-lg text-sm" :class="{
+
+              'bg-primary text-black font-semibold':
+                link.active,
+
+              'text-gray-400 cursor-not-allowed':
+                !link.url
+
+            }" v-html="link.label" />
+
+        </nav>
+      </div>
+    </template>
 
   </AppLayout>
 

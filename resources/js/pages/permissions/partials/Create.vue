@@ -4,30 +4,24 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Loading from '@/components/Loading.vue'
 import type { BreadcrumbItem } from '@/types'
-import roles from '@/routes/roles'
-
-/* =========================
-Props
-========================= */
-const props = defineProps<{
-  role: {
-    id: number
-    name: string
-    permissions: string[]
-  }
-  permissions: { id: number; name: string }[]
-  errors: Record<string, string>
-}>()
+import permissions from '@/routes/permissions'
 
 /* =========================
 Breadcrumb
 ========================= */
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Edit Role',
-    href: roles.edit(props.role.id).url
+    title: 'Create Permission',
+    href: permissions.create().url
   }
 ]
+
+/* =========================
+Props
+========================= */
+const props = defineProps<{
+  errors: Record<string, string>
+}>()
 
 /* =========================
 State
@@ -40,8 +34,7 @@ const successModal = ref({
 })
 
 const form = ref({
-  name: props.role.name,
-  permissions: [...props.role.permissions]
+  name: ''
 })
 
 /* =========================
@@ -50,15 +43,14 @@ Actions
 const submitForm = () => {
   isLoading.value = true
 
-  router.put(roles.update(props.role.id).url, form.value, {
+  router.post(permissions.store().url, form.value, {
     onSuccess: () => {
       successModal.value = {
         show: true,
-        message: 'Role berhasil diupdate'
+        message: 'Permission berhasil dibuat'
       }
-    },
-    onError: () => {
-      // validation error otomatis dari props.errors
+
+      form.value.name = ''
     },
     onFinish: () => {
       isLoading.value = false
@@ -68,13 +60,13 @@ const submitForm = () => {
 
 const closeSuccessModal = () => {
   successModal.value.show = false
-  router.visit(roles.index().url)
+  router.visit(permissions.index().url)
 }
 </script>
 
 <template>
 
-  <Head title="Edit Role" />
+  <Head title="Create Permission" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
@@ -102,19 +94,20 @@ const closeSuccessModal = () => {
 
     <!-- FORM -->
     <div class="w-full rounded-2xl shadow p-8 space-y-6">
-      <h2 class="text-xl font-semibold">Edit Role</h2>
+      <h2 class="text-xl font-semibold">Create New Permission</h2>
       <p class="text-sm text-gray-500">
-        Update role dan permission
+        Buat permission baru (contoh: user.create)
       </p>
 
       <form @submit.prevent="submitForm" class="space-y-6">
 
-        <!-- Role Name -->
+        <!-- Permission Name -->
         <div>
-          <label class="block text-sm font-medium">Role Name</label>
+          <label class="block text-sm font-medium">Permission Name</label>
           <input
             v-model="form.name"
             type="text"
+            placeholder="contoh: user.create"
             class="w-full mt-2 border rounded-lg px-4 py-2"
           />
 
@@ -123,37 +116,9 @@ const closeSuccessModal = () => {
           </p>
         </div>
 
-        <!-- Permissions -->
-        <div>
-          <label class="block text-sm font-medium mb-2">Permissions</label>
-
-          <div class="max-h-60 overflow-y-auto border rounded-lg p-4">
-
-            <!-- Count -->
-            <p class="text-xs text-gray-500 mb-2">
-              Selected: {{ form.permissions.length }}
-            </p>
-
-            <!-- Checkbox -->
-            <label
-              v-for="perm in permissions"
-              :key="perm.id"
-              class="flex items-center space-x-2 mb-2"
-            >
-              <input
-                type="checkbox"
-                :value="perm.name"
-                v-model="form.permissions"
-                class="accent-blue-500"
-              />
-              <span class="text-sm">{{ perm.name }}</span>
-            </label>
-          </div>
-        </div>
-
         <!-- Actions -->
         <div class="flex justify-end gap-5">
-          <Link :href="roles.index().url"
+          <Link :href="permissions.index().url"
             class="px-4 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400">
             Cancel
           </Link>
@@ -163,7 +128,7 @@ const closeSuccessModal = () => {
             :disabled="isLoading"
             class="px-4 py-2 bg-primary text-black rounded-lg hover:bg-green-700"
           >
-            Update Role
+            Save Permission
           </button>
         </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 
 class PermissionService
@@ -22,5 +23,26 @@ class PermissionService
     public function delete(int $id)
     {
         return Permission::findOrFail($id)->delete();
+    }
+
+    public function findById(int $id)
+    {
+        return Permission::findOrFail($id);
+    }
+
+    public function update(int $id, array $data)
+    {
+        return DB::transaction(function () use ($id, $data) {
+
+            $permission = Permission::findOrFail($id);
+
+            $permission->update([
+                'name' => $data['name']
+            ]);
+
+            $this->resetCache();
+
+            return $permission;
+        });
     }
 }

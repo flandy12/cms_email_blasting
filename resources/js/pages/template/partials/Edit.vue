@@ -171,47 +171,62 @@ const submitForm = () => {
     <Head title="Edit Template" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div v-if="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <!-- Loading Overlay -->
+        <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <Loading />
         </div>
 
-        <!-- Success Modal -->
-        <div v-if="successModal.show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center">
 
-                <!-- Icon -->
-                <div class="flex justify-center mb-4">
-                    <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                        <span class="text-green-600 text-2xl">✓</span>
-                    </div>
+        <!-- Success Modal -->
+        <div v-if="successModal.show"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+
+            <div class="modal-card">
+
+                <div class="success-icon">
+
+                    ✓
+
                 </div>
 
-                <!-- Title -->
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                    Berhasil
+                <h3>
+
+                    Success
+
                 </h3>
 
-                <!-- Message -->
-                <p class="text-sm text-gray-600 mb-6">
+                <p>
+
                     {{ successModal.message }}
+
                 </p>
 
-                <!-- Actions -->
-                <div class="flex justify-center gap-3">
-                    <button @click="closeSuccessModal"
-                        class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
-                        OK
-                    </button>
-                </div>
+                <button @click="closeSuccessModal" class="btn-primary w-full">
+
+                    Continue
+
+                </button>
 
             </div>
+
         </div>
 
-        <div class="w-full mx-auto  rounded-2xl shadow p-8 space-y-6">
-            <h2 class="text-xl font-semibold">Edit Template</h2>
-            <p class="text-sm text-gray-500">
-                Edit template for email / WhatsApp blasting
-            </p>
+        <div class="px-8 py-6 bg-background min-h-screen">
+            <div class="mb-8">
+
+                <h2 class="text-2xl font-bold text-foreground">
+
+                    Edit Template
+
+                </h2>
+
+                <p class="text-muted-foreground mt-2">
+
+                    Edit template for email / WhatsApp blasting
+
+                </p>
+
+            </div>
 
             <form @submit.prevent="submitForm" class="space-y-6">
                 <!-- Name -->
@@ -293,17 +308,14 @@ const submitForm = () => {
 
                 <div class="flex justify-end gap-5">
                     <div class="text-right">
-                        <Link :href="templates.index().url">
-                            <button
-                                class="px-4 py-2 bg-gray-300 text-black rounded-lg cursor-pointer hover:bg-gray-500">
-                                Cancel
-                            </button>
+                        <Link :href="templates.index().url" class="btn-danger">
+                            Cancel
                         </Link>
                     </div>
 
                     <div class="text-right">
                         <button type="submit"
-                            class="px-4 py-2 bg-primary text-black rounded-lg cursor-pointer hover:bg-green-700">
+                            class="bg-[#8BDD16] py-3 px-3 rounded-2xl text-black font-semibold">
                             Update Template
                         </button>
                     </div>

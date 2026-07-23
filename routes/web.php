@@ -22,9 +22,7 @@ use Laravel\Fortify\Features;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+   return redirect('login');
 })->name('home');
 
 Route::get('/token', function () {
@@ -194,10 +192,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('/', [RoleController::class, 'index'])->name('index');
             Route::get('/create', [RoleController::class, 'create'])->name('create');
-            Route::post('/', [RoleController::class, 'store'])->name('store');
-            Route::get('/{id}', [RoleController::class, 'show'])->name('show');
-            Route::put('/{id}', [RoleController::class, 'update'])->name('update');
-            Route::delete('/{id}', [RoleController::class, 'destroy'])->name('destroy');
+            Route::post('/create', [RoleController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [RoleController::class, 'edit'])->name('edit');
+            Route::put('/{id}/edit', [RoleController::class, 'update'])->name('update');
+            Route::delete('/{id}/delete', [RoleController::class, 'destroy'])->name('destroy');
         });
 
     /*
@@ -210,7 +208,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
 
             Route::get('/', [PermissionController::class, 'index'])->name('index');
-            Route::post('/', [PermissionController::class, 'store'])->name('store');
+            Route::get('/create', [PermissionController::class, 'create'])->name('create');
+            Route::post('/create', [PermissionController::class, 'store'])->name('store');
+
+            Route::get('/{id}/edit', [PermissionController::class, 'edit'])->name('edit');
+            Route::put('/{id}/edit', [PermissionController::class, 'update'])->name('update');
+
             Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
         });
 

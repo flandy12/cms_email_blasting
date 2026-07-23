@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ]
 
-const props = defineProps(['stats','campaigns']);
+const props = defineProps(['stats', 'campaigns']);
 
 // 🔹 State
 const stats = ref({
@@ -49,92 +49,178 @@ const statusClass = (status: string) => {
 </script>
 
 <template>
+
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 space-y-6">
+    <div class="space-y-8 p-8 bg-background min-h-screen">
 
-      <!-- 🔹 HEADER -->
-      <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Email Blasting Dashboard</h1>
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            Email Blasting Dashboard
+          </h1>
+
+          <p class="mt-1 text-muted-foreground">
+            Monitor campaign performance and delivery status.
+          </p>
+        </div>
       </div>
 
-      <!-- 🔹 STATS -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Statistics -->
+      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-        <div class="card">
+        <div class="dashboard-card border border-2 border-white" z>
           <p>Total Campaign</p>
           <h2>{{ stats.total_campaign }}</h2>
         </div>
 
-        <div class="card text-green-600">
+        <div class="dashboard-card success">
           <p>Sent</p>
           <h2>{{ stats.sent }}</h2>
         </div>
 
-        <div class="card text-red-600">
+        <div class="dashboard-card danger">
           <p>Failed</p>
           <h2>{{ stats.failed }}</h2>
         </div>
 
-        <div class="card text-yellow-600">
+        <div class="dashboard-card warning">
           <p>Pending</p>
           <h2>{{ stats.pending }}</h2>
         </div>
 
       </div>
 
-      <!-- 🔹 CAMPAIGN TABLE -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
-        <h2 class="font-semibold mb-4">Recent Campaign</h2>
+      <!-- Campaign -->
+      <div class="dashboard-table">
+
+        <div class="table-header">
+          <div>
+            <h2>Recent Campaign</h2>
+            <span>Latest email campaign activity</span>
+          </div>
+        </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
 
-            <thead class="text-left border-b">
+          <table class="dashboard-data-table">
+
+            <thead>
+
               <tr>
-                <th class="py-2">Name</th>
-                <th>Status</th>
-                <th>Progress</th>
-                <th>Created</th>
+
+                <th class="w-[35%]">
+                  Campaign
+                </th>
+
+                <th class="w-[15%] text-center">
+                  Status
+                </th>
+
+                <th class="w-[30%]">
+                  Progress
+                </th>
+
+                <th class="w-[20%]">
+                  Created
+                </th>
+
               </tr>
+
             </thead>
 
             <tbody>
-              <tr
-                v-for="c in campaigns"
-                :key="c.id"
-                class="border-b hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <td class="py-2 font-medium">{{ c.name }}</td>
 
+              <tr v-for="c in campaigns" :key="c.id">
+
+                <!-- Campaign -->
                 <td>
-                  <span
-                    class="px-2 py-1 rounded text-xs"
-                    :class="statusClass(c.status)"
-                  >
+
+                  <div class="campaign-info">
+
+                    <div class="campaign-avatar">
+
+                      {{ c.name.charAt(0).toUpperCase() }}
+
+                    </div>
+
+                    <div>
+
+                      <div class="campaign-title">
+
+                        {{ c.name }}
+
+                      </div>
+
+                      <div class="campaign-subtitle">
+
+                        {{ c.total }} recipients
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <!-- Status -->
+                <td class="text-center">
+
+                  <span class="status" :class="statusClass(c.status)">
+
                     {{ c.status }}
+
                   </span>
+
                 </td>
 
+                <!-- Progress -->
                 <td>
-                  {{ c.sent_count }} / {{ c.total }}
+
+                  <div class="progress-wrapper">
+
+                    <div class="progress">
+
+                      <div class="progress-fill" :style="{
+                        width:
+                          ((c.sent_count / c.total) * 100) + '%'
+                      }" />
+
+                    </div>
+
+                    <div class="progress-text">
+
+                      {{ c.sent_count }}
+
+                      <span>/ {{ c.total }}</span>
+
+                    </div>
+
+                  </div>
+
                 </td>
 
+                <!-- Date -->
                 <td>
-                  {{ c.created_at }}
+
+                  <div class="date-cell">
+
+                    {{ c.created_at }}
+
+                  </div>
+
                 </td>
+
               </tr>
 
-              <tr v-if="campaigns.length === 0">
-                <td colspan="4" class="text-center py-4 text-gray-400">
-                  No data available
-                </td>
-              </tr>
             </tbody>
 
           </table>
         </div>
+
       </div>
 
     </div>

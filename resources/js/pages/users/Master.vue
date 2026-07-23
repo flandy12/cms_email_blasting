@@ -3,6 +3,27 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import users from '@/routes/users';
 import { Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
+
+const destroy = (id: number) => {
+    if (!confirm('Delete this user?')) return
+
+    router.delete(users.destroy(id).url, {
+        preserveScroll: true,
+    })
+}
+
+const page = usePage()
+
+const permissions = computed<string[]>(() => {
+    return (page.props.auth?.permissions as string[]) ?? []
+})
+
+const can = (permission: string) => {
+    return permissions.value.includes(permission)
+}
 
 
 const props = defineProps<{
@@ -30,24 +51,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-6 space-y-6">
+        <div v-if="!can('users.view')" class="flex items-center justify-center h-96 text-muted-foreground">
+            You don't have permission to access this page.
+        </div>
 
-            <!-- 🔹 HEADER -->
-            <div class="">
-                <h1 class="text-2xl font-bold">Users Menagement</h1>
-
-                <p class="text-gray-500 text-sm">
-                    Manage your user
-                </p>
-            </div>
-
-            <div class="p-6">
+        <div v-else class="p-6 space-y-6">
+            <div>
 
                 <!-- HEADER -->
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold">Users</h1>
+                    <div class="">
+                        <h1 class="text-2xl font-bold">Users Menagement</h1>
+
+                        <p class="text-gray-500 text-sm">
+                            Manage your user
+                        </p>
+                    </div>
                     <!-- ADD -->
-                <Link :href="users.create().url"
+                    <Link v-if="can('users.create')" :href="users.create().url"
                         class="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-black shadow hover:opacity-90 transition">
                         <Plus class="h-5 w-5" />
                         Add Users
@@ -56,67 +77,130 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </div>
 
                 <!-- TABLE -->
-                <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4">
+                <div class="dashboard-table">
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                    <table class="dashboard-data-table">
 
-                            <thead class="border-b text-left">
-                                <tr>
-                                    <th class="py-2">No</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Created At</th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
+                        <thead>
 
-                            <tbody>
-                                <tr v-for="(user, index) in Users" :key="user.id"
-                                    class="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <tr>
 
-                                    <td class="py-2">
-                                        {{ index + 1 }}
-                                    </td>
+                                <th class="w-20">
+                                    #
+                                </th>
 
-                                    <td class="font-medium">
-                                        {{ user.name }}
-                                    </td>
+                                <th class="w-[35%]">
+                                    User
+                                </th>
 
-                                    <td>
-                                        {{ user.email }}
-                                    </td>
+                                <th>
+                                    Email
+                                </th>
 
-                                    <td>
-                                        {{ user.created_at }}
-                                    </td>
+                                <th>
+                                    Joined
+                                </th>
 
-                                    <td class="px-6 py-4 text-center">
+                                <th class="text-center w-56">
+                                    Action
+                                </th>
 
-                                        <Link :href="users.edit(user.id).url"
-                                            class="px-4 py-2 rounded-lg bg-primary text-black hover:opacity-90 transition">
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr v-for="(user, index) in Users" :key="user.id">
+
+                                <td>
+
+                                    {{ index + 1 }}
+
+                                </td>
+
+                                <td>
+
+                                    <div class="table-user">
+
+                                        <div class="table-avatar">
+
+                                            {{ user.name.charAt(0).toUpperCase() }}
+
+                                        </div>
+
+                                        <div>
+
+                                            <div class="table-title">
+
+                                                {{ user.name }}
+
+                                            </div>
+
+                                            <div class="table-subtitle">
+
+                                                User Account
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td class="text-muted">
+
+                                    {{ user.email }}
+
+                                </td>
+
+                                <td class="text-muted">
+
+                                    {{ user.created_at }}
+
+                                </td>
+
+                                <td>
+
+                                    <div class="table-actions">
+
+                                        <Link  v-if="can('users.edit')" :href="users.edit(user.id).url" class="btn-outline">
+
                                             Edit
+
                                         </Link>
 
-                                    </td>
+                                        <Link  v-if="can('users.delete')"  @click="destroy(user.id)" class="btn-danger">
 
-                                </tr>
+                                            Delete
 
-                                <!-- EMPTY STATE -->
-                                <tr v-if="Users.length === 0">
-                                    <td colspan="4" class="text-center py-4 text-gray-400">
-                                        No users found
-                                    </td>
-                                </tr>
-                            </tbody>
+                                        </Link>
 
-                        </table>
-                    </div>
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            <tr v-if="Users.length === 0">
+
+                                <td colspan="5" class="empty-state">
+
+                                    No users found
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
 
                 </div>
 
-            </div>
 
+            </div>
         </div>
     </AppLayout>
 </template>

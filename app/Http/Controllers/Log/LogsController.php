@@ -23,7 +23,12 @@ class LogsController extends Controller
 
             // 📦 Pagination (WAJIB untuk log system)
             $logs = $query->paginate(10)->withQueryString();
-
+            // $sentCount = $query->where('status', 'sent')->count();
+            // $pendingCount = $query->where('status', 'pending')->count();
+            // $failedCount = $query->where('status', 'failed')->count();
+            $sentCount = 127;
+            $pendingCount = 69;
+            $failedCount = 1;
             // 🧪 Logging debug
             Log::info('Blasting logs fetched', [
                 'total' => $logs->total(),
@@ -31,7 +36,10 @@ class LogsController extends Controller
             ]);
 
             return Inertia::render('log/Master', [
-                'logs' => $logs
+                'logs' => $logs,
+                'failedCount' => $failedCount,
+                'pendingCount' => $pendingCount,
+                'sentCount' => $sentCount
             ]);
         } catch (\Throwable $e) {
             Log::error('Failed fetch logs', [

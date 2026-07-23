@@ -4,6 +4,17 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import templates from '@/routes/templates'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const permissions = computed<string[]>(() => {
+  return (page.props.auth?.permissions as string[]) ?? []
+})
+
+const can = (permission: string) => {
+  return permissions.value.includes(permission)
+}
 
 interface Template {
   id: number
@@ -54,139 +65,163 @@ const deleteAll = () => {
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
-    <!-- HEADER -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3 px-5">
+    <div v-if="can('template-campaign.view')">
+      <!-- HEADER -->
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8 p-6">
 
-      <div>
-      <h1 class="text-2xl font-semibold">
-          Template Management
-        </h1>
+        <div>
 
-        <p class="text-gray-500 text-sm">
-          Manage your email templates
-        </p>
+          <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            Template Management
+          </h1>
+
+          <p class="mt-2 text-sm text-muted-foreground">
+            Manage and organize your email templates.
+          </p>
+
+        </div>
+
+        <div class="flex gap-3">
+
+          <Link v-if="can('template-campaign.create')" :href="templates.create().url" class="btn-primary">
+            <Plus class="w-5 h-5" />
+
+            Add Template
+          </Link>
+
+          <button v-if="templateData.length && can('template-campaign.delete')" @click="deleteAll" class="btn-danger">
+            <Trash2 class="w-5 h-5" />
+
+            Delete All
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- TABLE -->
+      <div class="dashboard-table mx-6">
+
+        <table class="dashboard-data-table">
+
+          <thead>
+
+            <tr>
+
+              <th class="w-20">
+                #
+              </th>
+
+              <th class="w-[70%]">
+                Template
+              </th>
+
+              <th class="w-48 text-center">
+                Action
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr v-for="(value, index) in templateData" :key="value.id">
+
+              <!-- Number -->
+              <td>
+
+                {{ startNumber + index + 1 }}
+
+              </td>
+
+              <!-- Template -->
+              <td>
+
+                <div class="table-user">
+
+                  <div class="table-avatar">
+
+                    {{ value.name.charAt(0).toUpperCase() }}
+
+                  </div>
+
+                  <div>
+
+                    <div class="table-title">
+
+                      {{ value.name }}
+
+                    </div>
+
+                    <div class="table-subtitle">
+
+                      Email Template
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+              <!-- Action -->
+              <td class="text-center p-0">
+
+                <div class="table-actions text-center">
+
+                  <Link v-if="can('template-campaign.edit')" :href="templates.edit(value.id).url" class="btn-outline">
+
+                    Edit
+
+                  </Link>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+            <tr v-if="!templateData.length">
+
+              <td colspan="3" class="empty-state">
+
+                No templates available
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
       </div>
 
 
-      <div class="flex gap-3">
+      <!-- PAGINATION -->
+      <div v-if="paginationLinks.length > 3" class="flex justify-end mt-8">
 
-        <!-- ADD -->
-        <Link :href="templates.create().url"
-          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-black shadow hover:opacity-90 transition">
-          <Plus class="h-5 w-5" />
-          Add Template
-        </Link>
+        <nav class="flex gap-2">
 
+          <Link v-for="(link, i) in paginationLinks" :key="i" :href="link.url || ''" preserve-scroll preserve-state
+            class="pagination-button" :class="{
 
-        <!-- DELETE ALL -->
-        <button v-if="templateData.length" @click="deleteAll"
-          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-500 text-white shadow hover:bg-red-600 transition">
-          <Trash2 class="h-5 w-5" />
-          Delete All
-        </button>
+              active: link.active,
+
+              disabled: !link.url
+
+            }" v-html="link.label" />
+
+        </nav>
 
       </div>
-
     </div>
 
-    <!-- TABLE -->
-    <div class="bg-white dark:bg-gray-700/50 shadow rounded-2xl overflow-hidden mx-5">
-
-      <table class="w-full">
-
-        <thead class="bg-gray-50  dark:bg-gray-600/50  border-b">
-
-          <tr>
-
-            <th class="px-6 py-4 text-left text-xs uppercase">
-              No
-            </th>
-
-            <th class="px-6 py-4 text-center text-xs uppercase">
-              Template Name
-            </th>
-
-            <th class="px-6 py-4 text-center text-xs uppercase">
-              Action
-            </th>
-
-          </tr>
-
-        </thead>
-
-
-        <tbody>
-
-          <!-- DATA -->
-          <tr v-for="(value, index) in templateData" :key="value.id" class="border-b hover:bg-gray-50 transition">
-
-            <td class="px-6 py-4">
-
-              {{ startNumber + index + 1 }}
-
-            </td>
-
-
-            <td class="px-6 py-4 text-center font-medium">
-
-              {{ value.name }}
-
-            </td>
-
-
-            <td class="px-6 py-4 text-center">
-
-              <Link :href="templates.edit(value.id).url"
-                class="px-4 py-2 rounded-lg bg-primary text-black hover:opacity-90 transition">
-                Edit
-              </Link>
-
-            </td>
-
-          </tr>
-
-
-          <!-- EMPTY STATE -->
-          <tr v-if="!templateData.length">
-
-            <td colspan="3" class="text-center py-14 text-gray-400">
-
-              No templates available
-
-            </td>
-
-          </tr>
-
-
-        </tbody>
-
-      </table>
-
+    <div v-else class="flex items-center justify-center py-20 text-muted-foreground">
+      You don't have permission to access this page.
     </div>
-
-
-    <!-- PAGINATION -->
-    <div v-if="paginationLinks.length > 3" class="flex justify-end mt-6">
-
-      <nav class="flex gap-2">
-
-        <Link v-for="(link, i) in paginationLinks" :key="i" :href="link.url || ''" preserve-scroll preserve-state
-          class="px-4 py-2 border rounded-lg text-sm transition" :class="{
-
-            'bg-primary text-black font-semibold': link.active,
-
-            'text-gray-400 cursor-not-allowed':
-              !link.url,
-
-            'hover:bg-gray-100':
-              link.url && !link.active
-
-          }" v-html="link.label" />
-
-      </nav>
-
-    </div>
-
 
   </AppLayout>
 

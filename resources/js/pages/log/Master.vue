@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const userPermissions = computed<string[]>(() => {
+    return (page.props.auth?.permissions as string[]) ?? []
+})
+
+const can = (permission: string) => {
+    return userPermissions.value.includes(permission)
+}
 
 /**
  * 🔒 Type safety (biar gak any)
@@ -14,6 +26,9 @@ interface LogItem {
     name?: string
     email?: string
     phone?: string
+    sentCount?: number
+    failedCount?: number
+    pendingCount?: number
 }
 
 interface PaginatedLogs {
@@ -28,7 +43,10 @@ interface PaginatedLogs {
 }
 
 const props = defineProps<{
-    logs: PaginatedLogs
+    logs: PaginatedLogs,
+    sentCount: number,
+    pendingCount: number,
+    failedCount: number
 }>()
 
 const breadcrumbs = [
@@ -58,99 +76,167 @@ const retry = (id: number) => {
 </script>
 
 <template>
+
     <Head title="Log Pengiriman" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="w-full mx-auto rounded-2xl shadow p-8 space-y-6">
+        <div v-if="!can('logs.view')" class="flex items-center justify-center h-96 text-muted-foreground">
+            You don't have permission to access this page.
+        </div>
+
+        <div v-else class="dashboard-card">
 
             <!-- Header -->
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-neutral-100">
-                    Log Pengiriman
-                </h2>
+            <div class="table-header">
+
+                <div>
+
+                    <h2>Delivery Logs</h2>
+
+                    <span>
+                        Monitor all email delivery activity.
+                    </span>
+
+                </div>
+
+                <div class="header-decoration flex  gap-5 mt-5">
+
+                    <div class="summary-item success">
+
+                        <span>{{ sentCount }}</span>
+
+                        Sent
+
+                    </div>
+
+                    <div class="summary-item warning">
+
+                        <span>{{ pendingCount }}</span>
+
+                        Pending
+
+                    </div>
+
+                    <div class="summary-item danger">
+
+                        <span>{{ failedCount }}</span>
+
+                        Failed
+
+                    </div>
+
+                </div>
+
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                    
-                    <!-- Head -->
-                    <thead class="bg-gray-50 dark:bg-neutral-800">
+            <div class="dashboard-table">
+
+                <table class="w-full text-center">
+
+                    <thead>
+
                         <tr>
-                            <th class="px-6 py-3 text-xs text-gray-500 uppercase">No</th>
-                            <th class="px-6 py-3 text-xs text-gray-500 uppercase">Email</th>
-                            <th class="px-6 py-3 text-xs text-gray-500 uppercase text-end">Status</th>
+
+                            <th>No</th>
+
+                            <th>Email</th>
+
+                            <th>Status</th>
+
+                            <th class="text-center">
+                                Action
+                            </th>
+
                         </tr>
+
                     </thead>
 
-                    <!-- Body -->
-                    <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                        
-                        <!-- Empty -->
+                    <tbody>
+
                         <tr v-if="logs.data.length === 0">
-                            <td colspan="5" class="text-center py-6 text-gray-500">
-                                Tidak ada data
+
+                            <td colspan="4" class="empty-state">
+
+                                No delivery logs found
+
                             </td>
+
                         </tr>
 
-                        <!-- Data -->
                         <tr v-for="(item, index) in logs.data" :key="item.id">
 
-                            <!-- No -->
-                            <td class="px-6 py-4 text-sm text-center">
-                                {{
-                                    (logs.current_page - 1) * logs.per_page + index + 1
-                                }}
+                            <td>
+
+                                {{ (logs.current_page - 1) * logs.per_page + index + 1 }}
+
                             </td>
 
-                            <!-- Email -->
-                            <td class="px-6 py-4 text-sm text-center">
-                                {{ item.email ?? '-' }}
+                            <td>
+
+                                <div class="email-cell">
+
+                                    <div class="avatar">
+
+                                        {{ item.email?.charAt(0).toUpperCase() }}
+
+                                    </div>
+
+                                    <div>
+
+                                        <strong>
+
+                                            {{ item.email }}
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
                             </td>
 
-                            <!-- Status -->
-                            <td class="px-6 py-4 text-end text-sm">
+                            <td>
 
-                                <span
-                                    class="px-3 py-1 rounded text-xs font-semibold"
-                                    :class="{
-                                        'bg-green-100 text-green-700': item.status === 'sent',
-                                        'bg-red-100 text-red-700': item.status === 'failed',
-                                        'bg-yellow-100 text-yellow-700': item.status === 'pending',
-                                    }"
-                                >
+                                <span class="status" :class="item.status">
+
                                     {{ item.status }}
+
                                 </span>
 
-                                <!-- Retry -->
-                                <button
-                                    v-if="item.status === 'failed'"
-                                    @click="retry(item.id)"
-                                    class="ml-3 px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                                >
+                            </td>
+
+                            <td class="text-center">
+
+                                <button @click="retry(item.id)" class="btn-outline">
+
                                     Retry
+
                                 </button>
 
                             </td>
+
                         </tr>
+
                     </tbody>
+
                 </table>
+
             </div>
 
             <!-- Pagination -->
-            <div class="flex justify-end mt-4 space-x-1">
-                <button
-                    v-for="(link, i) in logs.links"
-                    :key="i"
-                    v-html="link.label"
-                    @click="goToPage(link.url)"
-                    :disabled="!link.url"
-                    class="px-3 py-1 text-sm rounded border"
-                    :class="{
-                        'bg-blue-500 text-white': link.active,
-                        'text-gray-500 cursor-not-allowed': !link.url
-                    }"
-                />
+
+            <div class="pagination-wrapper">
+
+                <Link v-for="(link, i) in logs.links" :key="i" :href="link.url || ''" preserve-scroll preserve-state
+                    class="pagination-button" :class="{
+
+                        active: link.active,
+
+                        disabled: !link.url
+
+                    }" v-html="link.label" />
+
             </div>
 
         </div>

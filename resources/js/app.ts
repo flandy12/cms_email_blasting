@@ -16,6 +16,7 @@ createInertiaApp({
       `./pages/${name}.vue`,
       import.meta.glob<DefineComponent>('./pages/**/*.vue')
     ),
+
   setup({ el, App, props, plugin }) {
     const vueApp = createApp({ render: () => h(App, props) })
 
@@ -23,7 +24,7 @@ createInertiaApp({
     vueApp.use(plugin)
 
     // Initialize theme (dark/light)
-    initializeTheme()
+    // initializeTheme()
 
     vueApp.mount(el)
   },
@@ -33,4 +34,4 @@ createInertiaApp({
 })
 
 // Initialize theme sekali lagi untuk page load
-initializeTheme()
+// initializeTheme()

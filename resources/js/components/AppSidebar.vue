@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 
-import NavFooter from '@/components/NavFooter.vue'
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
+import AppLogo from './AppLogo.vue'
 
 import {
     Sidebar,
@@ -11,10 +13,8 @@ import {
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
-    SidebarMenuItem
+    SidebarMenuItem,
 } from '@/components/ui/sidebar'
-
-import { Link } from '@inertiajs/vue3'
 
 import {
     LayoutGrid,
@@ -25,25 +25,19 @@ import {
     Menu,
     Logs,
     TimerIcon,
-    Users2Icon
+    Users2Icon,
 } from 'lucide-vue-next'
-
-import { ref } from 'vue'
-
-import AppLogo from './AppLogo.vue'
 
 import { dashboard } from '@/routes'
 import campaigns from '@/routes/blasting/campaigns'
 import recipients from '@/routes/blasting/recipients'
 import templates from '@/routes/templates'
 import log from '@/routes/log'
-
-import type { NavItem } from '@/types'
-import { DatePicker } from 'reka-ui/namespaced'
 import users from '@/routes/users'
 import roles from '@/routes/roles'
+import permissions from '@/routes/permissions'
 
-
+import type { NavItem } from '@/types'
 
 /* =========================
 Sidebar Toggle
@@ -55,76 +49,84 @@ const toggleSidebar = () => {
     openSidebar.value = !openSidebar.value
 }
 
-
 /* =========================
-Navigation Items
+Permission
 ========================= */
 
-const mainNavItems: NavItem[] = [
 
+
+const page = usePage();
+
+console.log(page.props.auth);
+
+
+const userPermissions = computed(() => page.props.auth?.permissions ?? [])
+
+const hasPermission = (permission?: string) => {
+    if (!permission) return true
+
+    return userPermissions.value.includes(permission)
+}
+
+/* =========================
+Navigation
+========================= */
+
+const allNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid
+        icon: LayoutGrid,
+        permission: 'dashboard.view',
     },
-
     {
         title: 'Template Campaign',
+        href: templates.index(),
         icon: Send,
-        href: templates.index()
+        permission: 'template-campaign.view',
     },
-
     {
         title: 'Recipients',
+        href: recipients.index(),
         icon: Users,
-        href: recipients.index()
+        permission: 'recipients.view',
     },
-    
     {
         title: 'Schedule List',
+        href: campaigns.index(),
         icon: TimerIcon,
-        href: campaigns.index()
+        permission: 'schedule.view',
     },
-
     {
         title: 'Users',
+        href: users.index(),
         icon: Users2Icon,
-        href: users.index()
+        permission: 'users.view',
     },
-
     {
         title: 'Roles',
+        href: roles.index(),
         icon: Users2Icon,
-        href: roles.index()
+        permission: 'roles.view',
     },
-
+    {
+        title: 'Permission',
+        href: permissions.index(),
+        icon: Users2Icon,
+        permission: 'permissions.view',
+    },
     {
         title: 'Logs',
+        href: log.index(),
         icon: Logs,
-        href: log.index()
-    }
-
-]
-
-
-const footerNavItems: NavItem[] = [
-
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder
+        permission: 'logs.view',
     },
-
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen
-    }
-
 ]
 
+const mainNavItems = computed(() =>
+    allNavItems.filter(item => hasPermission(item.permission))
+)
 </script>
-
 
 
 <template>
@@ -172,8 +174,6 @@ const footerNavItems: NavItem[] = [
             </SidebarContent>
 
             <SidebarFooter>
-
-                <NavFooter :items="footerNavItems" />
 
                 <NavUser />
 

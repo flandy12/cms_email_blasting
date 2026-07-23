@@ -4,14 +4,25 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlastingCampaign;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+
+//    $user = User::find(1);
+
+// $user->hasPermissionTo('dashboard.view');
+
+// return $user;
+
+
+
         // 🔹 Stats (fix field name)
         $totalRecipient = BlastingCampaign::sum('total_recipient');
         $totalSent = BlastingCampaign::sum('sent_count');
